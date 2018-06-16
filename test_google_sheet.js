@@ -14,6 +14,7 @@ const app = express(); //建立一個express 伺服器
 
 var options = {
     url: 'https://docs.google.com/spreadsheets/d/1gqxTKZm7WWQSotmZkn4uWj4vW63dT9Qd53RUMMCl8mc/gviz/tq?tqx=out:html&tq=select%20*%20where%20D%20=%20%27b05202030%27&gid=94689965',
+    //notice to open "sharing-url"
     method: 'GET'    
 }
 

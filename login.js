@@ -68,7 +68,7 @@ function create_dev_name(email,line_id){
                 console.log(value.innerHTML);
               }
               dev_name = values[1].innerHTML;
-              isgroup = values[1].innerHTML;              
+              isgroup = values[5].innerHTML;              
               console.log("dev_name:"+ dev_name);
               console.log("is_group:"+ isgroup);
               if(dev_name !="&nbsp" && isgroup !="&nbsp"){
