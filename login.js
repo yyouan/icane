@@ -101,7 +101,7 @@ function psql(command){
                 console.log( "(psql-query):"+ JSON.stringify(row));
                 recpt += row;
             }    
-        }).then(res => {return recpt;}).catch(e => {client.release();console.error(e.stack);}); 
+        }).then(res => {return recpt;}).catch(e => {client.release();console.error(e.stack);return recpt;}); 
     })
     .catch(e => {
         client.release()
