@@ -43,7 +43,7 @@ function record_dev_name(name,isgroup,email){
     psql("UPDATE ACCOUNTS SET last_call_time=\'\' WHERE email=\'" + email +"\';"); 
     psql("UPDATE ACCOUNTS SET stepcount=0 WHERE email=\'" + email +"\';");    
 }
-function create_dev_name(email){
+function create_dev_name(email,line_id){
         var options = {
             url: 'https://docs.google.com/spreadsheets/d/1VWr1uoN0n9KD3h74G3P7HItf8-Hg2Pg9lN8ygJwQH7w/gviz/tq?tqx=out:html&tq=select%20*%20where%20E%20=%20%27'+ email +'%27&gid=1591596252%27',
             method: 'GET'    
@@ -67,6 +67,7 @@ function create_dev_name(email){
               console.log("is_group:"+ isgroup);
               if(dev_name !="&nbsp" && isgroup !="&nbsp"){
                 record_dev_name(dev_name,isgroup,email);
+                record_id(line_id,email);
               }else{
                 var req = post.events[0].message;
                 req.text ="您還沒填表單喔!";
@@ -164,8 +165,7 @@ function linebotParser(req ,res){
                     var email = post.events[0].message.text;
                     if( psql("SELECT * FROM ACCOUNTS WHERE email=\'" + email +"\';").length == 0 )
                     {
-                        create_dev_name(email);
-                        record_id(line_id,email);
+                        create_dev_name(email,line_id);                        
                         var req = post.events[0].message;
                         req.text ="成功紀錄!";
                         replymessage([req]);
