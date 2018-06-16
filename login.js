@@ -25,9 +25,9 @@ app.get('/data',datareceiver);
 
 //SQL
 /**
-     dev_name       |line_id        |times            | email              | last_call_time        |  stepcount
-    ----------------+---------------+-----------------+-------------------------------------------------------
-    icane           | 0123456789012 | 0               | xu.6u.30@gmail.com | JSON(year,month,date) | int
+     dev_name       |line_id        |times            | email              | last_call_time        |  stepcount | isgroup
+    ----------------+---------------+-----------------+--------------------------------------------------------------------
+    icane           | 0123456789012 | 0               | xu.6u.30@gmail.com | JSON(year,month,date) | int        | 0/1
 */  
 
 //login message with recpt function:
@@ -35,10 +35,11 @@ function record_id(id,email){
     psql("UPDATE ACCOUNTS SET line_id=\'"+ id +"\' WHERE email=\'" + email +"\';");        
 }
 
-function record_dev_name(name,email){
+function record_dev_name(name,isgroup,email){
     psql("INSERT INTO ACCOUNTS (email) VALUES (\'"+ email +"\');");
     psql("UPDATE ACCOUNTS SET times=\'"+ "0" +"\' WHERE email=\'" + email +"\';");
     psql("UPDATE ACCOUNTS SET dev_name=\'"+ name +"\' WHERE email=\'" + email +"\';");
+    psql("UPDATE ACCOUNTS SET isgroup=\'"+ isgroup +"\' WHERE email=\'" + email +"\';");
     psql("UPDATE ACCOUNTS SET last_call_time=\'\' WHERE email=\'" + email +"\';"); 
     psql("UPDATE ACCOUNTS SET stepcount=0 WHERE email=\'" + email +"\';");    
 }
@@ -47,7 +48,8 @@ function create_dev_name(email){
             url: 'https://docs.google.com/spreadsheets/d/1VWr1uoN0n9KD3h74G3P7HItf8-Hg2Pg9lN8ygJwQH7w/gviz/tq?tqx=out:html&tq=select%20*%20where%20E%20=%20%27'+ email +'%27&gid=1591596252%27',
             method: 'GET'    
         }
-        var dev_name ="";
+        let dev_name = "";
+        let isgroup = "";
         request(options, function (error, response, body) {
             if (!error && response.statusCode == 200) {
               console.log(body);
@@ -59,9 +61,11 @@ function create_dev_name(email){
               for (let value of values){
                 console.log(value.innerHTML);
               }
-              dev_name = values[1].innerHTML;              
-              console.log(dev_name);              
-              record_dev_name(dev_name,email);
+              dev_name = values[1].innerHTML;
+              isgroup = values[1].innerHTML;              
+              console.log("dev_name:"+ dev_name);
+              console.log("is_group:"+ isgroup);              
+              record_dev_name(dev_name,isgroup,email);
             }else{
               console.log(error);
               reject("!!!!!error when recpt from google sheet!!!!!");                
@@ -105,11 +109,43 @@ function linebotParser(req ,res){
         var replyToken = post.events[0].replyToken;
         var posttype = post.events[0].type;
         var line_id = post.events[0].source.userId;
+        let isgroup = false;
+        if (post.events[0].source.type =="group"){
+            line_id = post.events[0].source.groupid;
+            isgroup = true;
+        }
         /**var userMessage = post.events[0].message.text;
         console.log(replyToken);
         console.log(userMessage);**/
         if (typeof replyToken === 'undefined') {
             return;
+        }
+        if (posttype == 'join'){
+            let req = {
+                "type": "template",
+                "altText": "This is a buttons template",
+                "template": {
+                    "type": "buttons",                    
+                    "text": "按這裡註冊資料",
+                    "defaultAction": {
+                        "type": "uri",
+                        "label": "View detail",
+                        "uri": "https://goo.gl/forms/Uv2vKNKdETVQpEmu2"
+                    },
+                    "actions": [
+                        {
+                          "type": "uri",
+                          "label": "View detail",
+                          "uri": "https://goo.gl/forms/Uv2vKNKdETVQpEmu2"
+                        }
+                    ]
+                }
+            };
+            let text ={
+                "type":"text",
+                "text":"完成表單後，請輸入:\n[您的電子郵件地址]\nex:xu.6u.30@gmail.com"
+            }
+            replymessage([req,text]);            
         }
 
         if (posttype == 'message'){
@@ -123,20 +159,20 @@ function linebotParser(req ,res){
                         record_id(line_id,email);
                         var req = post.events[0].message;
                         req.text ="成功紀錄!";
-                        replymessage(req);
+                        replymessage([req]);
                         psql("UPDATE ACCOUNTS SET times=\'"+ "1" +"\' WHERE line_id=\'" + line_id +"\';"); 
 
                     }else{
                         var req = post.events[0].message;
                         req.text ="感謝提供意見回饋!";
-                        replymessage(req);                        
+                        replymessage([req]);                        
                     }
                     
                     
                 }else{
                     var req = post.events[0].message;
                     req.text ="要先去表單填資料喔!";
-                    replymessage(req);
+                    replymessage([req]);
                 }                
             }
         }        
@@ -151,7 +187,7 @@ function linebotParser(req ,res){
             },
             json: {
                 'replyToken': replyToken,
-                'messages': [recpt]
+                'messages': recpt
             }
           };
             
@@ -265,7 +301,7 @@ function datareceiver(req,res){
 
     var family = psql("SELECT line_id FROM ACCOUNTS WHERE dev_name=\'" + data.dev_name +"\';");
     for(let member of family){        
-        pushmessage(recpt,family);
+        pushmessage([recpt],family);
     };
 }
 
@@ -280,7 +316,7 @@ function pushmessage(recpt,id){
         },
         json: {
             "to": id,
-            'messages': [recpt]
+            'messages': recpt
         }
       };
         
@@ -365,7 +401,7 @@ function betteryschedule(){
                         "url": "https://photos.app.goo.gl/YbnwnaCfCZFCGLEL9",
                     }            
                 };
-                pushmessage(recpt,family);
+                pushmessage([recpt],client);
             }
         }
     }
