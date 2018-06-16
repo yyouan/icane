@@ -107,7 +107,7 @@ function psql(command){
         client.release();
         console.log("(psql):" + err.stack);        
     });
-    console("(psql:)"+typeof(recpt));
+    console.log("(psql:recpt type--)"+typeof(recpt));
     return recpt;
     
 }
