@@ -88,7 +88,7 @@ pool.on('error', (err, client) => {
   
 function psql(command){
 
-    var recpt =[];
+    let recpt =[];
     //while(is_conn_psql){console.log("(psql):pararell gate");};
     //if(!is_conn_psql){client.connect();is_conn_psql = true;}
     console.log("(psql):" + command );
@@ -101,11 +101,12 @@ function psql(command){
                 console.log( "(psql-query):"+ JSON.stringify(row));
                 recpt += row;
             }    
-        }).then(res => {return recpt;}).catch(e => {client.release();console.error(e.stack);return recpt;}); 
+        }).then(res => {return recpt;}).catch(e => {client.release();console.error("(psql):" + e.stack);return recpt;}); 
     })
     .catch(e => {
-        client.release()
-        console.log(err.stack)
+        client.release();
+        console.log("(psql):" + err.stack);
+        return recpt;
     });
        
     
