@@ -3,8 +3,8 @@ var request = require('request');
 const querystring = require('querystring');
 var CHANNEL_ACCESS_TOKEN = 'BBeO0lDVdZMnLDSONXfZlhniK9gjIK+FqzOoEz6lcgQ9g9CzqsDesBTS/o15Mw9ipLtAk4fP0aPIWojmZxbXXiWV6OANuZ6j+YYvrCK89rJovI6yXnTRt9G/8AedFPcfeMqwKWmsQB6KY+jAZoZFPwdB04t89/1O/w1cDnyilFU=';
 var fs = require('fs');
-const { Client } = require('pg');
-const client = new Client({
+const { Pool } = require('pg');
+const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     //ssl: true,
 });
@@ -80,23 +80,35 @@ function create_dev_name(email,line_id){
             }
         });
 }
-var is_conn_psql = false;
+//var is_conn_psql = false;
+pool.on('error', (err, client) => {
+    console.error('Unexpected error on idle client', err)
+    process.exit(-1)
+})
+  
 function psql(command){
 
     var recpt =[];
     //while(is_conn_psql){console.log("(psql):pararell gate");};
-    if(!is_conn_psql){client.connect();is_conn_psql = true;}
+    //if(!is_conn_psql){client.connect();is_conn_psql = true;}
     console.log("(psql):" + command );
-    client.query(command, (err, res) => {
-    if (err) throw err;
-    for (let row of res.rows) {
-        console.log( "(psql-query):"+ JSON.stringify(row));
-        recpt += row;
-    }    
+    pool.connect()
+    .then(client=>{
+        client.query(command)
+        .then(res => {
+            client.release();
+            for (let row of res.rows) {
+                console.log( "(psql-query):"+ JSON.stringify(row));
+                recpt += row;
+            }    
+        }).then(res => {return recpt;}).catch(e => {client.release();console.error(e.stack);}); 
+    })
+    .catch(e => {
+        client.release()
+        console.log(err.stack)
     });
-    //client.end();
-    //is_conn_psql = false;
-    return recpt;
+       
+    
 }
 
 function linebotParser(req ,res){
