@@ -103,8 +103,7 @@ function psql(command){
         client.query(command)
         .then(res => {
             client.release();
-            for (let row of res.rows) {
-                console.log( "(psql-query):"+ JSON.stringify(row));
+            for (let row of res.rows) {                
                 recpt += row;
             }    
         }).catch(e => {client.release(); console.error("(psql):" + e.stack);}); 
@@ -113,7 +112,7 @@ function psql(command){
         client.release();
         console.log("(psql):" + err.stack);        
     });
-    console.log("(psql:recpt type--)"+typeof(recpt));
+    console.log( "(psql-query):"+ JSON.stringify(recpt));
     return recpt;
     
 }
@@ -259,8 +258,8 @@ function datareceiver(req,res){
     }
 
     psql("UPDATE ACCOUNTS SET last_call_time=\'"+ JSON.stringify(time) +"\' WHERE dev_name=\'" + dev +"\';");
-    var stepcount = psql("SELECT stepcount FROM ACCOUNTS WHERE dev_name=\'" + dev +"\';")[0];
-    stepcount += data.step;
+    var stepcount = psql("SELECT stepcount FROM ACCOUNTS WHERE dev_name=\'" + dev +"\';").stepcount;
+    stepcount += parseInt(data.step);
     psql("UPDATE ACCOUNTS SET stepcount="+ stepcount +" WHERE dev_name=\'" + dev +"\';");
 
     var msg ={
@@ -281,11 +280,11 @@ function datareceiver(req,res){
           "contents": [
             {
               "type": "text",
-              "text": "角度狀態： "+ (data.ang==0)?"Standing":"Lying",
+              "text": "角度狀態： "+ (data.ang=='0')?"Standing":"Lying",
             },                
             {
                 "type": "text",
-                "text": "是否拿著？ "+ (data.isactive==0)?"沒拿":"拿著",
+                "text": "是否拿著？ "+ (data.isactive=='0')?"沒拿":"拿著",
             },
             {
                 "type": "text",
@@ -328,7 +327,7 @@ function datareceiver(req,res){
 
     var family = psql("SELECT line_id FROM ACCOUNTS WHERE dev_name=\'" + data.dev_name +"\';");
     for(let member of family){        
-        pushmessage([recpt],family);
+        pushmessage([recpt],family.line_id);
     };
 }
 
