@@ -156,6 +156,7 @@ function linebotParser(req ,res){
                     if(psql("SELECT times FROM ACCOUNTS WHERE lind_id=\'" + line_id +"\';")[0] == "0"){
 
                         var email = post.events[0].message.text;
+                        create_dev_name(email);
                         record_id(line_id,email);
                         var req = post.events[0].message;
                         req.text ="成功紀錄!";
