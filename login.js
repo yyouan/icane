@@ -52,8 +52,10 @@ function create_dev_name(email,line_id){
         let isgroup = "";
         request(options, function (error, response, body) {
             if (!error && response.statusCode == 200) {
-              console.log(body);
-              console.log(typeof(body));
+              console.log("(crt_dev_name)"+options.url);
+              console.log("(crt_dev_name)"+email);
+              console.log("(crt_dev_name)"+line_id);
+              //console.log(typeof(body));
               var parser = new DomParser();
               var doc = parser.parseFromString(body, "text/xml");
               console.log(typeof(doc));
