@@ -27,7 +27,7 @@ app.get('/data',datareceiver);
 /**
      dev_name       |line_id        |times            | email              | last_call_time        |  stepcount | isgroup
     ----------------+---------------+-----------------+--------------------------------------------------------------------
-    icane           | 0123456789012 | 0               | xu.6u.30@gmail.com | JSON(year,month,date) | int        | 0/1
+    icane           | 0123456789012 | 0               | xu.6u.30@gmail.com | JSON(year,month,date) | int        | 是／否
 */  
 
 //login message with recpt function:
@@ -234,7 +234,7 @@ function datareceiver(req,res){
     console.log(q.query); //?dev_name=....&alarm=.....
 
     var data = q.query;
-    var dev = data[dev_name];
+    var dev = data.dev_name;
 
     var date = new Date();
     var hour = date.getHours();
