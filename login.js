@@ -101,14 +101,14 @@ function psql(command){
                 console.log( "(psql-query):"+ JSON.stringify(row));
                 recpt += row;
             }    
-        }).then(res => {return recpt;}).catch(e => {client.release();console.error("(psql):" + e.stack);return recpt;}); 
+        }).catch(e => {client.release(); console.error("(psql):" + e.stack);}); 
     })
     .catch(e => {
         client.release();
-        console.log("(psql):" + err.stack);
-        return recpt;
+        console.log("(psql):" + err.stack);        
     });
-       
+    console("(psql:)"+typeof(recpt));
+    return recpt;
     
 }
 
