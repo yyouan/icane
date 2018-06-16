@@ -57,10 +57,12 @@ function create_dev_name(email,line_id){
               console.log("(crt_dev_name)"+options.url);
               console.log("(crt_dev_name)"+email);
               console.log("(crt_dev_name)"+line_id);
+              console.log(body);              
               //console.log(typeof(body));
               var parser = new DomParser();
               var doc = parser.parseFromString(body, "text/xml");
               console.log(doc.getElementsByTagName("tr"));
+              console.log(doc);
               var values = doc.getElementsByTagName("tr")[1].getElementsByTagName("td");
               for (let value of values){
                 console.log(value.innerHTML);
