@@ -84,7 +84,7 @@ var is_conn_psql = false;
 function psql(command){
 
     var recpt =[];
-    while(is_conn_psql){console.log("(psql):pararell gate");};
+    //while(is_conn_psql){console.log("(psql):pararell gate");};
     if(!is_conn_psql){client.connect();is_conn_psql = true;}
     console.log("(psql):" + command );
     client.query(command, (err, res) => {
@@ -94,8 +94,8 @@ function psql(command){
         recpt += row;
     }    
     });
-    client.end();
-    is_conn_psql = false;
+    //client.end();
+    //is_conn_psql = false;
     return recpt;
 }
 
