@@ -80,11 +80,12 @@ function create_dev_name(email,line_id){
             }
         });
 }
-
+var is_conn_psql = false;
 function psql(command){
 
     var recpt =[];
-    client.connect();
+    while(is_conn_psql){};
+    if(!is_conn_psql){client.connect();is_conn_psql = true;}
     console.log("(psql):" + command );
     client.query(command, (err, res) => {
     if (err) throw err;
@@ -93,6 +94,7 @@ function psql(command){
         recpt += row;
     }
     client.end();
+    is_conn_psql = false;
     });
     return recpt;
 }
