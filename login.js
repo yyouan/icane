@@ -1,23 +1,20 @@
 var express = require('express');
 var request = require('request');
 const querystring = require('querystring');
-var CHANNEL_ACCESS_TOKEN = 'BOpCS2JXlx/6DfqGmLVD9vU8FmjviF0TV/QJoLfkN0C465BHYiKtyfzP1Ov4wEIcF7xFvwu64T/RrO64+cai0dY7Th5yno/goN9+dJVa4EsLoNC5JV4mYF7ROws6Og6vfHByaSO/qQRZR8sy5Bz/twdB04t89/1O/w1cDnyilFU=';
-var ANGEL_CHANNEL_ACCESS_TOKEN = 'BOpCS2JXlx/6DfqGmLVD9vU8FmjviF0TV/QJoLfkN0C465BHYiKtyfzP1Ov4wEIcF7xFvwu64T/RrO64+cai0dY7Th5yno/goN9+dJVa4EsLoNC5JV4mYF7ROws6Og6vfHByaSO/qQRZR8sy5Bz/twdB04t89/1O/w1cDnyilFU=';
-var MASTER_CHANNEL_ACCESS_TOKEN = 'BOpCS2JXlx/6DfqGmLVD9vU8FmjviF0TV/QJoLfkN0C465BHYiKtyfzP1Ov4wEIcF7xFvwu64T/RrO64+cai0dY7Th5yno/goN9+dJVa4EsLoNC5JV4mYF7ROws6Og6vfHByaSO/qQRZR8sy5Bz/twdB04t89/1O/w1cDnyilFU=';
-var HALL_CHANNEL_ACCESS_TOKEN = 'BOpCS2JXlx/6DfqGmLVD9vU8FmjviF0TV/QJoLfkN0C465BHYiKtyfzP1Ov4wEIcF7xFvwu64T/RrO64+cai0dY7Th5yno/goN9+dJVa4EsLoNC5JV4mYF7ROws6Og6vfHByaSO/qQRZR8sy5Bz/twdB04t89/1O/w1cDnyilFU=';
+var CHANNEL_ACCESS_TOKEN = 'BBeO0lDVdZMnLDSONXfZlhniK9gjIK+FqzOoEz6lcgQ9g9CzqsDesBTS/o15Mw9ipLtAk4fP0aPIWojmZxbXXiWV6OANuZ6j+YYvrCK89rJovI6yXnTRt9G/8AedFPcfeMqwKWmsQB6KY+jAZoZFPwdB04t89/1O/w1cDnyilFU=';
 var fs = require('fs');
 const { Client } = require('pg');
 const client = new Client({
     connectionString: process.env.DATABASE_URL,
     //ssl: true,
-    });
+});
 var DomParser = require('dom-parser');
+var url = require('url');
+var schedule = require('node-schedule');
 
 const app = express(); //建立一個express 伺服器
 app.post('/' , linebotParser); // POST 方法**/
-app.post('/hall',linebotParser);
-app.post('/angle',anglebot);
-app.post('/master',masterbot);
+app.get('/data',datareceiver);
 /**
  * expected result:
  *  user:@ok     
@@ -28,46 +25,29 @@ app.post('/master',masterbot);
 
 //SQL
 /**
-     angle_nickname |   angle_id    | master_nickname |  master_id   | department | student_id | give_id | head
-    ----------------+---------------+-----------------+-----------------------------------------------------------
-    友安            | 0123456789012 | 主人             | 123456789012 | 台大物理   |b05202030   | 是       |url
+     dev_name       |line_id        |times            | email              | last_call_time        |  stepcount
+    ----------------+---------------+-----------------+-------------------------------------------------------
+    icane           | 0123456789012 | 0               | xu.6u.30@gmail.com | JSON(year,month,date) | int
 */  
 
 //login message with recpt function:
-function record_angle_id(id){
-    psql("INSERT INTO ACCOUNT (angle_id) VALUES (\'"+ id +"\');");    
+function record_id(id,email){
+    psql("UPDATE ACCOUNTS SET line_id=\'"+ id +"\' WHERE email=\'" + email +"\';");        
 }
-const googleform= {
-    "type": "template",
-    "altText": "This is a buttons template",
-    "template": {
-        "type": "buttons",        
-        "title": "填寫小主人資料",
-        "text": "讓小天使認識你",        
-        "actions": [
-            {
-              "type": "uri",
-              "label": "填寫",
-              "data": querystring.stringify(psy)
-            }
-        ]
-    }
-};
-function record_student_id(id,student_id){
-    psql("UPDATE ACCOUNT SET student_id=\'"+ student_id +"\' WHERE angle_id=\'" + id +"\';");
+
+function record_dev_name(name,email){
+    psql("INSERT INTO ACCOUNTS (email) VALUES (\'"+ email +"\');");
+    psql("UPDATE ACCOUNTS SET times=\'"+ "0" +"\' WHERE email=\'" + email +"\';");
+    psql("UPDATE ACCOUNTS SET dev_name=\'"+ name +"\' WHERE email=\'" + email +"\';");
+    psql("UPDATE ACCOUNTS SET last_call_time=\'\' WHERE email=\'" + email +"\';"); 
+    psql("UPDATE ACCOUNTS SET stepcount=0 WHERE email=\'" + email +"\';");    
 }
-function passtopsql(id){
-        var std_id = psql('SELECT student_id FROM ACCOUNT WHERE angle_id=\''+ id +'\';')[0].student_id;
+function create_dev_name(email){
         var options = {
-            url: 'https://docs.google.com/spreadsheets/d/1gqxTKZm7WWQSotmZkn4uWj4vW63dT9Qd53RUMMCl8mc/gviz/tq?tqx=out:html&tq=select%20*%20where%20D%20=%20%27'+std_id+'%27&gid=94689965',
+            url: 'https://docs.google.com/spreadsheets/d/1VWr1uoN0n9KD3h74G3P7HItf8-Hg2Pg9lN8ygJwQH7w/gviz/tq?tqx=out:html&tq=select%20*%20where%20E%20=%20%27'+ email +'%27&gid=1591596252%27',
             method: 'GET'    
         }
-        var data ={
-            angle_nickname:"",
-            department:"",
-            give_id:"",
-            head:""
-        }
+        var dev_name ="";
         request(options, function (error, response, body) {
             if (!error && response.statusCode == 200) {
               console.log(body);
@@ -79,19 +59,12 @@ function passtopsql(id){
               for (let value of values){
                 console.log(value.innerHTML);
               }
-              data.head = values[2].innerHTML;
-              data.angle_nickname = values[3].innerHTML;
-              data.department = values[1].innerHTML;
-              data.give_id = values[8].innerHTML;
-              console.log(data);
-              
-              psql("UPDATE ACCOUNT SET head=\'"+ data.head +"\' WHERE angle_id=\'" + id +"\';");
-              psql("UPDATE ACCOUNT SET angle_nickname=\'"+ data.angle_nickname +"\' WHERE angle_id=\'" + id +"\';");
-              psql("UPDATE ACCOUNT SET department=\'"+ data.department +"\' WHERE angle_id=\'" + id +"\';");
-              psql("UPDATE ACCOUNT SET give_id\'"+ data.give_id +"\' WHERE angle_id=\'" + id +"\';");
+              dev_name = values[1].innerHTML;              
+              console.log(dev_name);              
+              record_dev_name(dev_name,email);
             }else{
               console.log(error);
-              reject("!!!!!error when recpt image!!!!!");                
+              reject("!!!!!error when recpt from google sheet!!!!!");                
             }
         });
 }
@@ -131,6 +104,7 @@ function linebotParser(req ,res){
         console.log(post.events[0]);
         var replyToken = post.events[0].replyToken;
         var posttype = post.events[0].type;
+        var line_id = post.events[0].source.userId;
         /**var userMessage = post.events[0].message.text;
         console.log(replyToken);
         console.log(userMessage);**/
@@ -140,78 +114,34 @@ function linebotParser(req ,res){
 
         if (posttype == 'message'){
             
-            if(post.events[0].message.type == 'text'){
+            if(post.events[0].message.type == 'text'){                
+                if( psql("SELECT * FROM ACCOUNTS WHERE lind_id=\'" + line_id +"\';").length != 0 )   
+                {
+                    if(psql("SELECT times FROM ACCOUNTS WHERE lind_id=\'" + line_id +"\';")[0] == "0"){
 
-                if(post.events[0].message.text == "@ok"){
-                    record_angle_id(post.events[0].source.userId);
-                    var req = post.events[0].message;
-                    req.text ="請輸入你的學號";
-                    sendmessage(req);                    
-                }
-                if(post.events[0].message.text == "@done"){                    
-                    passtopsql(post.events[0].source.userId);
-                }
-                else{ //student id
-                    record_student_id( post.events[0].source.userId , post.events[0].message.text);
-                    sendmessage(googleform);
-                }
-            }
-        }
+                        var email = post.events[0].message.text;
+                        record_id(line_id,email);
+                        var req = post.events[0].message;
+                        req.text ="成功紀錄!";
+                        replymessage(req);
+                        psql("UPDATE ACCOUNTS SET times=\'"+ "1" +"\' WHERE line_id=\'" + line_id +"\';"); 
 
-        //var imgurl="https://angleline.herokuapp.com/img.jpg";
-        if(post.events[0].message.type == 'image'){
-            //set adrr
-            adrr+=String(post.events[0].message.id);
-            adrr+=".jpg";
-            console.log(adrr);
-            // Configure the request
-            var getimage=new Promise((resolve,reject)=>{
-              var options = {
-                url: 'https://api.line.me/v2/bot/message/'+ post.events[0].message.id +'/content',
-                method: 'GET',
-                headers: {                
-                  'Authorization':'Bearer ' + CHANNEL_ACCESS_TOKEN                  
-                },
-                encoding: null
-              }
-  
-              // Start the request
-
-              request(options, function (error, response, body) {
-                if (!error && response.statusCode == 200) {
-                  nwimg = body;
-                  console.log(body);
-                  resolve(body);                  
+                    }else{
+                        var req = post.events[0].message;
+                        req.text ="感謝提供意見回饋!";
+                        replymessage(req);                        
+                    }
+                    
+                    
                 }else{
-                  //console.log();
-                  reject("!!!!!error when recpt image!!!!!");                
-                }
-              })              
-            });
-            
-            getimage            
-            .then((body)=>{
-              //fs.writeFile(__dirname+"/img.jpg","");
-              /**fs.writeFile(__dirname+"/img.jpg",body,(err)=>{
-                if(err){
-                  console.log("(writefile)"+err);
-                }else{                  
-                  console.log("the file was saved");
-                  //console.log(body);
-                }
-              });**/              
-              return Promise.resolve(body); 
-            })
-            .then(sendmessage)
-            .catch((err)=>{
-              console.log("(linebotpromise)"+err.message);
+                    var req = post.events[0].message;
+                    req.text ="要先去表單填資料喔!";
+                    replymessage(req);
+                }                
             }
-            );          
-        }else{
-          sendmessage(nwimg);
-        }
+        }        
 
-        function sendmessage(recpt){ //recpt is message object
+        function replymessage(recpt){ //recpt is message object
           var options = {
             url: "https://api.line.me/v2/bot/message/reply ",
             method: 'POST',
@@ -224,15 +154,7 @@ function linebotParser(req ,res){
                 'messages': [recpt]
             }
           };
-          if(post.events[0].message.type == 'image'){
-                options.json.messages[0].originalContentUrl=(domain+adrr);
-                options.json.messages[0].previewImageUrl=(domain+adrr);
-                app.get(adrr,(req,res)=>{
-                  //res.sendFile(__dirname+"/img.jpg");    
-                  res.writeHead(200, {'Content-Type': 'image/jpeg' });
-                  res.end(nwimg, 'binary');
-                });
-          }  
+            
           request(options, function (error, response, body) {
               if (error) throw error;
               console.log("(line)");
@@ -243,9 +165,208 @@ function linebotParser(req ,res){
     });
 
 }
+
+function datareceiver(req,res){
+    var q = url.parse(req.url,true);
+    console.log(q.query); //?dev_name=....&alarm=.....
+
+    var data = q.query;
+    var dev = data[dev_name];
+
+    var date = new Date();
+    var hour = date.getHours();
+    hour = (hour < 10 ? "0" : "") + hour;
+
+    var min  = date.getMinutes();
+    min = (min < 10 ? "0" : "") + min;
+
+    var year = date.getFullYear();
+
+    var month = date.getMonth() + 1;
+    month = (month < 10 ? "0" : "") + month;
+
+    var day  = date.getDate();
+    day = (day < 10 ? "0" : "") + day;
+
+    var time = {
+        "min":min,
+        "hour":hour,
+        "month":month,
+        "year":year
+    }
+
+    psql("UPDATE ACCOUNTS SET last_call_time=\'"+ JSON.stringify(time) +"\' WHERE dev_name=\'" + dev +"\';");
+    var stepcount = psql("SELECT stepcount FROM ACCOUNTS WHERE dev_name=\'" + dev +"\';")[0];
+    stepcount += data.step;
+    psql("UPDATE ACCOUNTS SET stepcount="+ stepcount +" WHERE dev_name=\'" + dev +"\';");
+
+    var msg ={
+        "type": "bubble",
+        "header": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "一般通知訊息"
+            }
+          ]
+        },
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "角度狀態： "+ (data.ang==0)?"Standing":"Lying",
+            },                
+            {
+                "type": "text",
+                "text": "是否拿著？ "+ (data.isactive==0)?"沒拿":"拿著",
+            },
+            {
+                "type": "text",
+                "text": "本日腳步數： "+ stepcount +"步",
+            }                
+          ]
+        }            
+    };
+
+    var errormsg={
+        "type": "bubble",
+        "header": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "故障訊息(連線／感測器)"
+            }
+          ]
+        },
+        "hero": {
+            "type": "image",
+            "url": "https://photos.app.goo.gl/YbnwnaCfCZFCGLEL9",
+        }            
+    };
+    
+    if( data.alarm == 1){
+        msg.header.contents[0].text = "!!警示訊息!!";
+        msg.hero = {
+            "type": "image",
+            "url": "https://photos.app.goo.gl/j2hwSjuqgRFNPBhG9",
+        }
+    }
+
+    var recpt=[msg];
+    if(data.error == 1){
+        recpt += errormsg;
+    };
+
+    var family = psql("SELECT line_id FROM ACCOUNTS WHERE dev_name=\'" + data.dev_name +"\';");
+    for(let member of family){        
+        pushmessage(recpt,family);
+    };
+}
+
+function pushmessage(recpt,id){
+
+    var options = {
+        url: "https://api.line.me/v2/bot/message/push ",
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json', 
+          'Authorization':'Bearer ' + CHANNEL_ACCESS_TOKEN
+        },
+        json: {
+            "to": id,
+            'messages': [recpt]
+        }
+      };
+        
+      request(options, function (error, response, body) {
+          if (error) throw error;
+          console.log("(line)");
+          console.log(body);
+      });
+
+}
+
 //因為 express 預設走 port 3000，而 heroku 上預設卻不是，要透過下列程式轉換
 var server = app.listen((process.env.PORT || 8080), function() {
     var port = server.address().port;
     console.log("App now running on port", port);
 });
 //!!!!!
+
+//--------------always on----------------------------
+function betteryschedule(){
+    schedule.scheduledJob('0 15 * * * *',scanAccount);
+    schedule.scheduledJob('0 30 * * * *',scanAccount);
+    schedule.scheduledJob('0 45 * * * *',scanAccount);
+    schedule.scheduledJob('0 00 * * * *',scanAccount);
+    
+    function scanAccount(){
+        var clients = psql("SELECT line_id,last_call_time FROM ACCOUNTS;");
+        var date = new Date();
+        var min  = date.getMinutes();
+        var hour  = date.getHours();
+        var day  = date.getDate();
+        var month  = date.getMonth();
+        var year = date.getFullYear();
+
+        for(let client of clients){
+            var clientmin=parseInt(JSON.parse(client.last_call_time).min);
+            var clienthour=parseInt(JSON.parse(client.last_call_time).hour);
+            var clientday=parseInt(JSON.parse(client.last_call_time).day);
+            var clientmonth=parseInt(JSON.parse(client.last_call_time).month);
+            var clientyear=parseInt(JSON.parse(client.last_call_time).year);
+            var alarm = false;
+
+            if( ( (min - clientmin) < 30 && [clienthour,clientday,clientmonth,clientyear].toString()==[hour,day,month,year].toString() ) 
+            || ( (min==15) && ((75-clientmin) <30 ) && ( ( (hour-clienthour)==1 && [clientday,clientmonth,clientyear].toString()==[day,month,year].toString() )
+            || ((hour=0) && (clienthour == 23) && ( ( (day-clientday)==1 && [clientmonth,clientyear].toString()==[month,year].toString() )
+            || ((day==1) && (
+            (([clientday,clientmonth].toString() == [28,2].toString() 
+            || [clientday,clientmonth].toString() == [29,2].toString()
+            || [clientday,clientmonth].toString() == [31,1].toString()
+            || [clientday,clientmonth].toString() == [31,3].toString()
+            || [clientday,clientmonth].toString() == [30,4].toString()
+            || [clientday,clientmonth].toString() == [31,5].toString()
+            || [clientday,clientmonth].toString() == [30,6].toString()
+            || [clientday,clientmonth].toString() == [31,7].toString()
+            || [clientday,clientmonth].toString() == [31,8].toString()
+            || [clientday,clientmonth].toString() == [30,9].toString()
+            || [clientday,clientmonth].toString() == [31,10].toString()
+            || [clientday,clientmonth].toString() == [30,11].toString()
+            ) && clientyear==year)
+            ||
+            (
+                [clientday,clientmonth].toString() == [31,12].toString()
+                && (year-clientyear)==1
+            )
+            )))
+            )))){}
+            else{
+                var errormsg={
+                    "type": "bubble",
+                    "header": {
+                      "type": "box",
+                      "layout": "vertical",
+                      "contents": [
+                        {
+                          "type": "text",
+                          "text": "故障訊息(連線／沒電)"
+                        }
+                      ]
+                    },
+                    "hero": {
+                        "type": "image",
+                        "url": "https://photos.app.goo.gl/YbnwnaCfCZFCGLEL9",
+                    }            
+                };
+                pushmessage(recpt,family);
+            }
+        }
+    }
+}
