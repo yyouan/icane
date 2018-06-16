@@ -64,8 +64,15 @@ function create_dev_name(email){
               dev_name = values[1].innerHTML;
               isgroup = values[1].innerHTML;              
               console.log("dev_name:"+ dev_name);
-              console.log("is_group:"+ isgroup);              
-              record_dev_name(dev_name,isgroup,email);
+              console.log("is_group:"+ isgroup);
+              if(dev_name !="&nbsp" && isgroup !="&nbsp"){
+                record_dev_name(dev_name,isgroup,email);
+              }else{
+                var req = post.events[0].message;
+                req.text ="您還沒填表單喔!";
+                replymessage([req]);
+              }              
+              
             }else{
               console.log(error);
               reject("!!!!!error when recpt from google sheet!!!!!");                
@@ -147,32 +154,30 @@ function linebotParser(req ,res){
             }
             replymessage([req,text]);            
         }
-
+        
         if (posttype == 'message'){
             
-            if(post.events[0].message.type == 'text'){                
-                if( psql("SELECT * FROM ACCOUNTS WHERE line_id=\'" + line_id +"\';").length != 0 )   
+            if(post.events[0].message.type == 'text'){             
+                
+                if(psql("SELECT * FROM ACCOUNTS WHERE line_id=\'" + line_id +"\';").length == 0)   
                 {
-                    if(psql("SELECT times FROM ACCOUNTS WHERE line_id=\'" + line_id +"\';")[0] == "0"){
-
-                        var email = post.events[0].message.text;
+                    var email = post.events[0].message.text;
+                    if( psql("SELECT * FROM ACCOUNTS WHERE email=\'" + email +"\';").length == 0 )
+                    {
                         create_dev_name(email);
                         record_id(line_id,email);
                         var req = post.events[0].message;
                         req.text ="成功紀錄!";
                         replymessage([req]);
-                        psql("UPDATE ACCOUNTS SET times=\'"+ "1" +"\' WHERE line_id=\'" + line_id +"\';"); 
 
                     }else{
                         var req = post.events[0].message;
-                        req.text ="感謝提供意見回饋!";
+                        req.text ="這個郵件信箱註冊過了喔!";
                         replymessage([req]);                        
                     }
-                    
-                    
                 }else{
                     var req = post.events[0].message;
-                    req.text ="要先去表單填資料喔!";
+                    req.text ="您的回饋已經傳送給官方!";
                     replymessage([req]);
                 }                
             }
