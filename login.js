@@ -151,9 +151,9 @@ function linebotParser(req ,res){
         if (posttype == 'message'){
             
             if(post.events[0].message.type == 'text'){                
-                if( psql("SELECT * FROM ACCOUNTS WHERE lind_id=\'" + line_id +"\';").length != 0 )   
+                if( psql("SELECT * FROM ACCOUNTS WHERE line_id=\'" + line_id +"\';").length != 0 )   
                 {
-                    if(psql("SELECT times FROM ACCOUNTS WHERE lind_id=\'" + line_id +"\';")[0] == "0"){
+                    if(psql("SELECT times FROM ACCOUNTS WHERE line_id=\'" + line_id +"\';")[0] == "0"){
 
                         var email = post.events[0].message.text;
                         create_dev_name(email);
