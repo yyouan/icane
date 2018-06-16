@@ -44,8 +44,10 @@ function record_dev_name(name,isgroup,email){
     psql("UPDATE ACCOUNTS SET stepcount=0 WHERE email=\'" + email +"\';");    
 }
 function create_dev_name(email,line_id){
+        let google_url = 'https://docs.google.com/spreadsheets/d/1VWr1uoN0n9KD3h74G3P7HItf8-Hg2Pg9lN8ygJwQH7w/gviz/tq?tqx=out:html&tq=select%20*%20where%20E%20=%20%27';
+        google_url += (email +'%27&gid=1591596252%27');
         var options = {
-            url: 'https://docs.google.com/spreadsheets/d/1VWr1uoN0n9KD3h74G3P7HItf8-Hg2Pg9lN8ygJwQH7w/gviz/tq?tqx=out:html&tq=select%20*%20where%20E%20=%20%27'+ email +'%27&gid=1591596252%27',
+            url: google_url,
             method: 'GET'    
         }
         let dev_name = "";
@@ -58,7 +60,7 @@ function create_dev_name(email,line_id){
               //console.log(typeof(body));
               var parser = new DomParser();
               var doc = parser.parseFromString(body, "text/xml");
-              console.log(typeof(doc));
+              console.log(doc.getElementsByTagName("tr"));
               var values = doc.getElementsByTagName("tr")[1].getElementsByTagName("td");
               for (let value of values){
                 console.log(value.innerHTML);
