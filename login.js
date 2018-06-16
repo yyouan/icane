@@ -111,7 +111,7 @@ function linebotParser(req ,res){
         var line_id = post.events[0].source.userId;
         let isgroup = false;
         if (post.events[0].source.type =="group"){
-            line_id = post.events[0].source.groupid;
+            line_id = post.events[0].source.groupId;
             isgroup = true;
         }
         /**var userMessage = post.events[0].message.text;
