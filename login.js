@@ -94,24 +94,26 @@ pool.on('error', (err, client) => {
   
 function psql(command){
    
-    let recpt =[];
+    
     //while(is_conn_psql){console.log("(psql):pararell gate");};
     //if(!is_conn_psql){client.connect();is_conn_psql = true;}
     console.log("(psql):" + command );
     var pool_promise = 
     pool.connect()
     .then(client=>{
+        let recpt =[];
         var res;
         client.query(command)
         .then(res => {
             client.release();
             for (let row of res.rows) {                
                 recpt += row;
+                console.log( "(psql-query):"+ row);
             }    
         }).catch(e => {client.release(); console.error("(psql):" + e.stack);});
-        return res;
+        return recpt;
     })
-    .then( res=> {
+    .then( recpt=> {
         console.log( "(psql-query):"+ JSON.stringify(recpt));
         return recpt;
     })
