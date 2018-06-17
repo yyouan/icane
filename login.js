@@ -108,19 +108,23 @@ function psql(command){
             client.release();
             for (let row of res.rows) {                
                 recpt += row;
-                console.log( "(psql-query):"+ row);
+                console.log( "(psql-query):"+ JSON.stringify(row));
             }    
         }).catch(e => {client.release(); console.error("(psql):" + e.stack);});
         return recpt;
     })
     .then( recpt=> {
-        console.log( "(psql-query):"+ JSON.stringify(recpt));
+        for(let row of recpt){
+            console.log( "(psql-query):"+ JSON.stringify(row));
+        } 
         return recpt;
     })
     .catch(e => {
         client.release();
         console.log("(psql):" + err.stack);
-        console.log( "(psql-query):"+ JSON.stringify(recpt));
+        for(let row of recpt){
+            console.log( "(psql-query):"+ JSON.stringify(row));
+        }        
         return recpt;      
     });    
     
