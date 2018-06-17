@@ -94,41 +94,41 @@ pool.on('error', (err, client) => {
   
 function psql(command){
    
-    
-    //while(is_conn_psql){console.log("(psql):pararell gate");};
-    //if(!is_conn_psql){client.connect();is_conn_psql = true;}
-    console.log("(psql):" + command );
-    var pool_promise = 
-    pool.connect()
-    .then(client=>{
+    return new Promise((resolve,reject)=>{
+        //while(is_conn_psql){console.log("(psql):pararell gate");};
+        //if(!is_conn_psql){client.connect();is_conn_psql = true;}
         let recpt =[];
-        var res;
-        client.query(command)
-        .then(res => {
+        let error;
+        console.log("(psql):" + command );
+        var pool_promise = 
+        pool.connect()
+        .then(client=>{            
+            var res;
+            client.query(command)
+            .then(res => {
+                client.release();
+                for (let row of res.rows) {                
+                    recpt += row;
+                    console.log( "(psql-query):"+ JSON.stringify(row));
+                }    
+            }).catch(e => {client.release(); console.error("(psql):" + e.stack);});            
+        })
+        .then( ()=> {
+            for(let row of recpt){
+                console.log( "(psql-query-recpt):"+ JSON.stringify(row));
+            }
+        }).then(()=>{resolve(recpt);})
+        .catch(e => {
             client.release();
-            for (let row of res.rows) {                
-                recpt += row;
-                console.log( "(psql-query):"+ JSON.stringify(row));
-            }    
-        }).catch(e => {client.release(); console.error("(psql):" + e.stack);});
-        return recpt;
-    })
-    .then( recpt=> {
-        for(let row of recpt){
-            console.log( "(psql-query):"+ JSON.stringify(row));
-        } 
-        return recpt;
-    })
-    .catch(e => {
-        client.release();
-        console.log("(psql):" + err.stack);
-        for(let row of recpt){
-            console.log( "(psql-query):"+ JSON.stringify(row));
-        }        
-        return recpt;      
-    });    
+            console.log("(psql):" + err.stack);
+            for(let row of recpt){
+                console.log( "(psql-query-recpt):"+ JSON.stringify(row));
+            }
+           reject(e); 
+        });
+    });
     
-    return pool_promise;
+    
 }
 
 function linebotParser(req ,res){
@@ -355,11 +355,11 @@ function datareceiver(req,res){
                 let family_member = [];
                 for(let member in family){
                     family_member += member.line_id;
+                    console.log(member.line_id);
                 }
                 return family_member; 
         })
-        .then( family_member =>{
-            console.log(family_member);
+        .then( family_member =>{            
             pushmessage(recpt,family_member);
         });
     });
