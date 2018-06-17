@@ -111,6 +111,7 @@ function psql(command){
     })
     .then( res=> {
         console.log( "(psql-query):"+ JSON.stringify(recpt));
+        return recpt;
     })
     .catch(e => {
         client.release();
