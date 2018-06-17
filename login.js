@@ -280,7 +280,7 @@ function datareceiver(req,res){
 
     psql("UPDATE ACCOUNTS SET last_call_time=\'"+ JSON.stringify(time) +"\' WHERE dev_name=\'" + dev +"\';");
     psql("SELECT stepcount FROM ACCOUNTS WHERE dev_name=\'" + dev +"\';").then( recpt =>{
-        let stepcount = recpt.stepcount;
+        let stepcount = recpt[0].stepcount;
         stepcount += parseInt(data.step);
         psql("UPDATE ACCOUNTS SET stepcount="+ stepcount +" WHERE dev_name=\'" + dev +"\';");
         return stepcount;
@@ -349,9 +349,10 @@ function datareceiver(req,res){
         if(data.error == 1){
             recpt += errormsg;
         };
-        let family_member = [];
+        
 
         psql("SELECT line_id FROM ACCOUNTS WHERE dev_name=\'" + data.dev_name +"\';").then(family=>{
+                let family_member = [];
                 for(let member in family){
                     family_member += member.line_id;
                 }
