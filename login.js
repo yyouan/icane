@@ -101,13 +101,15 @@ function psql(command){
     var pool_promise = 
     pool.connect()
     .then(client=>{
+        var res;
         client.query(command)
         .then(res => {
             client.release();
             for (let row of res.rows) {                
                 recpt += row;
             }    
-        }).catch(e => {client.release(); console.error("(psql):" + e.stack);}); 
+        }).catch(e => {client.release(); console.error("(psql):" + e.stack);});
+        return res;
     })
     .then( res=> {
         console.log( "(psql-query):"+ JSON.stringify(recpt));
@@ -351,7 +353,7 @@ function datareceiver(req,res){
         })
         .then( family_member =>{
             console.log(family_member);
-            pushmessage([recpt],family_member);
+            pushmessage(recpt,family_member);
         });
     });
 }
