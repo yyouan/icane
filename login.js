@@ -100,10 +100,8 @@ function psql(command){
         let recpt =[];
         let error;
         console.log("(psql):" + command );
-        var pool_promise = 
         pool.connect()
         .then(client=>{            
-            var res;
             client.query(command)
             .then(res => {
                 client.release();
@@ -117,6 +115,7 @@ function psql(command){
             for(let row of recpt){
                 console.log( "(psql-query-recpt):"+ JSON.stringify(row));
             }
+            console.log( "(psql-query-recpt):"+ recpt.length);
         }).then(()=>{resolve(recpt);})
         .catch(e => {
             client.release();
