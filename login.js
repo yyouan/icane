@@ -492,7 +492,7 @@ function betteryschedule(){
                                 "contents": [
                                     {
                                     "type": "text",
-                                    "text": "故障訊息(連線／感測器)"
+                                    "text": "故障訊息(連線／沒電)"
                                     }
                                 ]
                                 },
