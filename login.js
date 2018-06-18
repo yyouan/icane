@@ -361,7 +361,7 @@ function linebotParser(req ,res){
                                         let_pushmessage(nwimg);
                                     }
 
-                                    function let_sendmessage(recpt){
+                                    function let_pushmessage(recpt){
                                         psql("SELECT line_id FROM ACCOUNTS WHERE dev_name=\'"+ dev +"\';").then( clients =>{
                                             for(client of clients){
                                                 var options = {
