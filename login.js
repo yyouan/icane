@@ -345,7 +345,7 @@ function datareceiver(req,res){
         psql("SELECT line_id FROM ACCOUNTS WHERE dev_name=\'" + data.dev_name +"\';").then(family=>{
                 let family_member = [];
                 for(let member of family){  //in:for json(only get key,in this case is 0) //of :for array
-                    family_member.push(member.line_id);
+                    family_member.push(member.line_id.replace(/\s+/g, ""));
                     console.log(member.line_id);
                 }
                 console.log(family_member.length);
@@ -454,7 +454,7 @@ function betteryschedule(){
                             "url": "https://photos.app.goo.gl/YbnwnaCfCZFCGLEL9",
                         }            
                     };
-                    pushmessage([recpt],client);
+                    pushmessage([recpt],client.replace(/\s+/g, ""));
                 }
             }
         });
