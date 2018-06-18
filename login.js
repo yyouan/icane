@@ -108,22 +108,14 @@ function psql(command){
                 for (let row of res.rows) {                
                     recpt += row;
                     console.log( "(psql-query):"+ JSON.stringify(row));
-                }    
-            }).catch(e => {client.release(); console.error("(psql):" + e.stack);});            
-        })
-        .then( ()=> {
-            for(let row of recpt){
-                console.log( "(psql-query-recpt):"+ JSON.stringify(row));
-            }
-            console.log( "(psql-query-recpt):"+ recpt.length);
-        }).then(()=>{resolve(recpt);})
-        .catch(e => {
-            client.release();
-            console.log("(psql):" + err.stack);
-            for(let row of recpt){
-                console.log( "(psql-query-recpt):"+ JSON.stringify(row));
-            }
-           reject(e); 
+                }
+                resolve(recpt);
+                for(let row of recpt){
+                    console.log( "(psql-query-recpt):"+ JSON.stringify(row));
+                }
+                console.log( "(psql-query-recpt):"+ recpt.length);    
+            })
+            .catch(e => {client.release(); console.error("(psql):" + e.stack);reject(e);});            
         });
     });
     
@@ -356,6 +348,7 @@ function datareceiver(req,res){
                     family_member += member.line_id;
                     console.log(member.line_id);
                 }
+                console.log(family_member.length);
                 return family_member; 
         })
         .then( family_member =>{            
