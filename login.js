@@ -278,7 +278,7 @@ function datareceiver(req,res){
     })
     .then( stepcount =>{
 
-        var msg ={
+        var msg = {
             "type": "bubble",
             "header": {
               "type": "box",
@@ -310,7 +310,7 @@ function datareceiver(req,res){
             }            
         };
     
-        var errormsg={
+        var errormsg = {
             "type": "bubble",
             "header": {
               "type": "box",
@@ -338,7 +338,7 @@ function datareceiver(req,res){
     
         var recpt=[msg];
         if(data.error == 1){
-            recpt += errormsg;
+            recpt.push(errormsg);
         };
         
 
