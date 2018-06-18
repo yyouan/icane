@@ -32,13 +32,34 @@ app.get('/data',datareceiver);
 
 //login message with recpt function:
 function record_dev_name(name,id,isgroup,email){
+    var date = new Date();
+    var hour = date.getHours();
+    hour = (hour < 10 ? "0" : "") + hour;
+
+    var min  = date.getMinutes();
+    min = (min < 10 ? "0" : "") + min;
+
+    var year = date.getFullYear();
+
+    var month = date.getMonth() + 1;
+    month = (month < 10 ? "0" : "") + month;
+
+    var day  = date.getDate();
+    day = (day < 10 ? "0" : "") + day;
+
+    var time = {
+        "min":min,
+        "hour":hour,
+        "month":month,
+        "year":year
+    }
 
     psql("INSERT INTO ACCOUNTS (email) VALUES (\'"+ email +"\');").then(
         res =>{
             psql("UPDATE ACCOUNTS SET times=\'"+ "0" +"\' WHERE email=\'" + email +"\';");
             psql("UPDATE ACCOUNTS SET dev_name=\'"+ name +"\' WHERE email=\'" + email +"\';");
             psql("UPDATE ACCOUNTS SET isgroup=\'"+ isgroup +"\' WHERE email=\'" + email +"\';");
-            psql("UPDATE ACCOUNTS SET last_call_time=\'\' WHERE email=\'" + email +"\';"); 
+            psql("UPDATE ACCOUNTS SET last_call_time=\'"+ JSON.stringify(time) +"\' WHERE email=\'" + email +"\';"); 
             psql("UPDATE ACCOUNTS SET stepcount=0 WHERE email=\'" + email +"\';");
             psql("UPDATE ACCOUNTS SET line_id=\'"+ id +"\' WHERE email=\'" + email +"\';");  
         }
@@ -414,6 +435,7 @@ function betteryschedule(){
     schedule.scheduleJob('30 * * * *',scanAccount);
     schedule.scheduleJob('45 * * * *',scanAccount);
     schedule.scheduleJob('00 * * * *',scanAccount);
+    schedule.scheduleJob('00 * * * * *',scanAccount);//test
     
     function scanAccount(){
         var date = new Date();
