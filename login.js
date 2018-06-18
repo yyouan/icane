@@ -232,6 +232,7 @@ function linebotParser(req ,res){
                         });
 
                     }else{
+                        var email = post.events[0].message.text;
                         if(email=="@iwantbehost"){
                             psql("UPDATE ACCOUNTS SET ishost=\'"+ "1" +"\' WHERE line_id=\'" + line_id +"\';");
                             var req = post.events[0].message;
