@@ -27,7 +27,7 @@ app.get('/data',datareceiver);
 /**
      dev_name       |line_id        |times            | email              | last_call_time        |  stepcount | isgroup |ishost
     ----------------+---------------+-----------------+--------------------------------------------------------------------
-    icane           | 0123456789012 | 0               | xu.6u.30@gmail.com | JSON(year,month,date) | int        | 是／否  | 0/1
+    icane           | 0123456789012 | 0               | 0926372361         | JSON(year,month,date) | int        | 是／否  | 0/1
 */  
 
 //login message with recpt function:
@@ -68,7 +68,7 @@ function record_dev_name(name,id,isgroup,email){
     );      
 }
 function create_dev_name(post,email,line_id){
-        let google_url = 'https://docs.google.com/spreadsheets/d/1VWr1uoN0n9KD3h74G3P7HItf8-Hg2Pg9lN8ygJwQH7w/gviz/tq?tqx=out:html&tq=select%20*%20where%20E%20=%20%27';
+        let google_url = 'https://docs.google.com/spreadsheets/d/1VWr1uoN0n9KD3h74G3P7HItf8-Hg2Pg9lN8ygJwQH7w/gviz/tq?tqx=out:html&tq=select%20*%20where%20G%20=%20%27';
         google_url += (email +'%27&gid=1591596252%27');
         var options = {
             url: google_url,
@@ -202,7 +202,7 @@ function linebotParser(req ,res){
             };
             let text ={
                 "type":"text",
-                "text":"完成表單後，請輸入:\n[您的電子郵件地址]\nex:xu.6u.30@gmail.com"
+                "text":"完成表單後，請輸入:\n[拐杖使用人手機號碼]\nex:0926-372-361"
             }
             replymessage([req,text]);            
         }
@@ -233,7 +233,7 @@ function linebotParser(req ,res){
                                         "type":"text",
                                         "text":""
                                     }
-                                    text.text ="這個郵件信箱註冊過了喔!";
+                                    text.text ="這個手機號碼註冊過了喔!";
                                     replymessage([text]);                        
                                 }
                             });
@@ -258,9 +258,12 @@ function linebotParser(req ,res){
                                 text.text ="您已成為管理員!";
                                 replymessage([text]);                             
                             }
-                            else if(email.substr(0,9)=="@add_dev:"){
+                            else if(email.substr(0,5)=="@add:"){
                                 console.log(email);
-                                let name = email.substr(9);
+                                let rawdata = email.substr(5);
+                                let data = querystring.parse(rawdata);
+                                let name = data.dev;
+                                let email = data.phone;
                                 record_dev_name(name,line_id,"1",email);
                             
                                 let text ={
@@ -601,14 +604,17 @@ function datareceiver(req,res){
     }
 
     psql("UPDATE ACCOUNTS SET last_call_time=\'"+ JSON.stringify(time) +"\' WHERE dev_name=\'" + dev +"\';");
-    psql("SELECT stepcount FROM ACCOUNTS WHERE dev_name=\'" + dev +"\';").then( recpt =>{
+    psql("SELECT * FROM ACCOUNTS WHERE dev_name=\'" + dev +"\';").then( recpt =>{
         let stepcount = recpt[0].stepcount;
+        let email = recpt[0].email;
         stepcount += parseInt(data.step);
         psql("UPDATE ACCOUNTS SET stepcount="+ stepcount +" WHERE dev_name=\'" + dev +"\';");
-        return stepcount;
+        return [stepcount,email];
     })
-    .then( stepcount =>{
+    .then( res =>{
         
+        let stepcount = res[0];
+        let email = res[1];
 
         var msg ={  
             "type": "flex",
@@ -629,6 +635,10 @@ function datareceiver(req,res){
                   "type": "box",
                   "layout": "vertical",
                   "contents": [
+                    {
+                      "type": "text",
+                      "text": "裝置代碼: " +dev
+                    },
                     {
                       "type": "text",
                       "text": "角度狀態： "+ ((data.ang=='0')?"|| Standing ||":"= Lying ="),
@@ -658,7 +668,7 @@ function datareceiver(req,res){
                     "contents": [
                         {
                         "type": "text",
-                        "text": "故障訊息(連線／感測器)"
+                        "text": dev + " 故障訊息(連線／感測器)"
                         }
                     ]
                     },
@@ -673,6 +683,10 @@ function datareceiver(req,res){
                         {
                           "type": "text",
                           "text": "請趕緊通話聯繫，確認狀況",
+                        },
+                        {
+                            "type": "text",
+                            "text": "請撥打:" + email,
                         }                
                       ]
                     }              
@@ -680,7 +694,7 @@ function datareceiver(req,res){
         };
         
         if( data.alarm == 1){
-            msg.contents.header.contents[0].text = "!!跌倒了!!---快聯繫---";
+            msg.contents.header.contents[0].text = "跌倒了!!->快聯繫:"+ email;
             msg.contents.hero = {
                 "type": "image",
                 "url": "https://lh3.googleusercontent.com/asSt1576xm1O1TJ3VhNIbOKRjRpX9-MvccKMdxZImhvMw5HgtVfaCe72aouni0r7_4JQZuQD7AK3tjI2GLjnnOVtYEuGrOuc1MUd36oMzT49SUFmGgpQ-XLA7b8HWlN6j7Jh9pfvx2lMRE2zUpegR--5-rmIf14CaH-fMuZutKJekhYwrNuYsH9GyavSlm9T26gkGqusqw3Ia9YRjKGaJ1vspp2MoFwg_23BAdkO89LM2kQDQ_QLW1uH6AtQl-aOrJdk01-oUPcTAuXADUuytvqE4MAjL0E1ptNkRUzbChVqNh6GDO0J0k_Qkmr8RaZ4cReblu26rEDPnj9FgMlVZn4uFAEtqmDpJ_Pu76gSkyc2CwWyLw1ZbFFi5-SkpI9dvZdhO2LENenzU6WJyVGFgk8LqhvYBDzJ-WcmRilaTj0SemoT1aO6-wMqFcp70V9JhWDSr_tsZcICUUNiZZKtkjJDJUKb5J6bcdIRugaEjitQ7dVR7pSHtgjDOrYtOXbkIN52JWXGSLebQ7UVJ6huWZtp8_B9qwynrKC215HVSYdfC55CnfguUcwOtZq8YTlTgFUZiX9nJ3PYcPh0OeN5U1vMhNnUGfNyS1am0pD-3LOORcNTW_bb8yNFB9yyRKZuX-ok1JQBnp1DQMRVTeKMMAebRCs=w316-h332-no",
@@ -755,7 +769,7 @@ function betteryschedule(){
         var month  = (date.getMonth()+1);
         var year = date.getFullYear();
 
-        psql("SELECT line_id,last_call_time FROM ACCOUNTS;").then( clients =>{
+        psql("SELECT * FROM ACCOUNTS;").then( clients =>{
 
             for(let client of clients){
                 var clientmin=parseInt(JSON.parse(client.last_call_time).min);
@@ -803,7 +817,7 @@ function betteryschedule(){
                                 "contents": [
                                     {
                                     "type": "text",
-                                    "text": "故障訊息(連線／沒電)"
+                                    "text": client.dev_name+ " 故障訊息(連線／沒電)"
                                     }
                                 ]
                                 },
@@ -818,7 +832,11 @@ function betteryschedule(){
                                     {
                                       "type": "text",
                                       "text": "請趕緊通話聯繫，確認狀況",
-                                    }                
+                                    },
+                                    {
+                                        "type": "text",
+                                        "text": "請撥打:" + client.email,
+                                    }              
                                   ]
                                 }              
                             }
