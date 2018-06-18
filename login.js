@@ -512,7 +512,7 @@ function betteryschedule(){
                                 }              
                             }
                     };
-                    pushmessage([errormsg],client.replace(/\s+/g, ""));
+                    pushmessage([errormsg],client.line_id.replace(/\s+/g, ""));
                 }
             }
         });
