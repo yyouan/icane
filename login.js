@@ -232,16 +232,19 @@ function linebotParser(req ,res){
                         });
 
                     }else{
-                        if(email="@iwantbehost"){
+                        if(email=="@iwantbehost"){
                             psql("UPDATE ACCOUNTS SET ishost=\'"+ "1" +"\' WHERE line_id=\'" + line_id +"\';");
                             var req = post.events[0].message;
                             req.text ="您已成為管理員!";
                             replymessage([req]);
                         }
-                        else if(email.substr(0,9)="@add_dev:"){
+                        else if(email.substr(0,9)=="@add_dev:"){
                             console.log(email);
                             let name = email.substr(9);
                             record_dev_name(name,line_id,isgroup,email);
+                            var req = post.events[0].message;
+                            req.text = name+"裝置已加入!";
+                            replymessage([req]);
                         }
                         else{
                             var req = post.events[0].message;
