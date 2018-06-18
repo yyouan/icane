@@ -278,7 +278,7 @@ function datareceiver(req,res){
 
     var year = date.getFullYear();
 
-    var month = date.getMonth() + 1;
+    var month = date.getMonth() ;
     month = (month < 10 ? "0" : "") + month;
 
     var day  = date.getDate();
@@ -444,7 +444,7 @@ function betteryschedule(){
         var min  = date.getMinutes();
         var hour  = date.getHours();
         var day  = date.getDate();
-        var month  = date.getMonth();
+        var month  = (date.getMonth()+1);
         var year = date.getFullYear();
 
         psql("SELECT line_id,last_call_time FROM ACCOUNTS;").then( clients =>{
