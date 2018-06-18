@@ -353,16 +353,13 @@ function datareceiver(req,res){
         
 
         psql("SELECT line_id FROM ACCOUNTS WHERE dev_name=\'" + data.dev_name +"\';").then(family=>{
-                let family_member = [];
+                let family_num = 0;
                 for(let member of family){  //in:for json(only get key,in this case is 0) //of :for array
-                    family_member.push(member.line_id.replace(/\s+/g, ""));
+                    pushmessage(recpt , member.line_id.replace(/\s+/g, ""));
                     console.log(member.line_id);
+                    family_num++;
                 }
-                console.log(family_member.length);
-                return family_member; 
-        })
-        .then( family_member =>{            
-            pushmessage(recpt,family_member);
+                console.log(family_num);               
         });
     });
 }
@@ -373,7 +370,7 @@ function pushmessage(recpt,id){
     });
 
     var options = {
-        url: "https://api.line.me/v2/bot/message/multicast",
+        url: "https://api.line.me/v2/bot/message/push",
         method: 'POST',
         headers: {
           'Content-Type':  'application/json', 
