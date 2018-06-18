@@ -283,8 +283,8 @@ function linebotParser(req ,res){
                                         "label": dev.dev_name,
                                         "uri": ("https://icane.herokuapp.com/choice?dev_name="+ dev.dev_name +"&msg" +JSON.stringify(post.events[0].message))
                                     }
-                                    console.log(choic.uri);
-                                    console.log(choic.label);
+                                    console.log(choice.uri);
+                                    console.log(choice.label);
                                     button.template.actions.push(choice);                                    
                                 }
                                 sent.push(button);
