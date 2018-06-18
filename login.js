@@ -104,7 +104,10 @@ function create_dev_name(email,line_id){
               
             }else{
               console.log(error);
-              reject("!!!!!error when recpt from google sheet!!!!!");                
+              console.log("!!!!!error when recpt from google sheet!!!!!");
+              var req = post.events[0].message;
+              req.text ="您還沒填表單喔!";
+              replymessage([req]);                
             }
         });
 }
