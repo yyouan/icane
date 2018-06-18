@@ -454,7 +454,8 @@ function betteryschedule(){
                 var clientmonth=parseInt(JSON.parse(client.last_call_time).month);
                 var clientyear=parseInt(JSON.parse(client.last_call_time).year);
                 var alarm = false;
-    
+                console.log([clientmin,clienthour,clientday,clientmonth,clientyear].toString());
+                console.log([min,hour,day,month,year].toString());
                 if( ( (min - clientmin) < 30 && [clienthour,clientday,clientmonth,clientyear].toString()==[hour,day,month,year].toString() ) 
                 || ( (min==15) && ((75-clientmin) <30 ) && ( ( (hour-clienthour)==1 && [clientday,clientmonth,clientyear].toString()==[day,month,year].toString() )
                 || ((hour=0) && (clienthour == 23) && ( ( (day-clientday)==1 && [clientmonth,clientyear].toString()==[month,year].toString() )
