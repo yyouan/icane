@@ -280,7 +280,7 @@ function linebotParser(req ,res){
                                         if(id.ishost == "1"){
                                             text.text = "管理員：\n" + post.events[0].message.text;
                                         }else{
-                                            text.text = "某間理帳號：\n" + post.events[0].message.text;
+                                            text.text = "某監理帳號：\n" + post.events[0].message.text;
                                         }
 
                                         pushmessage([text],id.line_id.replace(/\s+/g, ""));
