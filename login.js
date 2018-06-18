@@ -151,7 +151,7 @@ function psql(command){
 function linebotParser(req ,res){
     //route
     var nwimg;
-    const domain="https://angleline.herokuapp.com";  
+    const domain="https://icane.herokuapp.com";  
     var adrr="/";
     
     // 定义了一个post变量，用于暂存请求体的信息
@@ -422,7 +422,7 @@ function linebotParser(req ,res){
 
                                 //route
                                 let nwimg;
-                                const domain="https://angleline.herokuapp.com";  
+                                const domain="https://icane.herokuapp.com";  
                                 let adrr="/";
                                                                     
                                     let q = url.parse(req.url,true);
