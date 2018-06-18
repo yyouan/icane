@@ -281,7 +281,7 @@ function linebotParser(req ,res){
                                     let choice = {
                                         "type": "uri",
                                         "label": dev.dev_name.replace(/\s+/g, ""),
-                                        "uri": ("https://icane.herokuapp.com/choice?dev_name="+ dev.dev_name.replace(/\s+/g, "") +"&msg" +JSON.stringify(post.events[0].message))
+                                        "uri": ("https://icane.herokuapp.com/choice?dev_name="+ dev.dev_name.replace(/\s+/g, "") +"&msg=" +querystring.stringify(JSON.stringify(post.events[0].message)))
                                     }
                                     console.log(choice.uri);
                                     console.log(choice.label);
@@ -304,7 +304,7 @@ function linebotParser(req ,res){
                                     console.log(q.query); //?dev_name=...
 
                                     let dev = q.query.dev_name;
-                                    let msg = q.query.msg;                                    
+                                    let msg = JSON.parse(querystring.parse(q.query.msg));                                    
                                     let type = msg.type;
                                     let msgid = msg.id;
                                     
