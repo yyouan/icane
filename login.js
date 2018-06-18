@@ -242,7 +242,7 @@ function linebotParser(req ,res){
                         else if(email.substr(0,9)=="@add_dev:"){
                             console.log(email);
                             let name = email.substr(9);
-                            record_dev_name(name,line_id,isgroup,email);
+                            record_dev_name(name,line_id,"1",email);
                             var req = post.events[0].message;
                             req.text = name+"裝置已加入!";
                             replymessage([req]);
@@ -281,8 +281,10 @@ function linebotParser(req ,res){
                                     let choice = {
                                         "type": "uri",
                                         "label": dev.dev_name,
-                                        "uri": ("https://icane.herokuapp.com/choice?dev_name="+ dev.dev_name +"&msgid=" +post.events[0].message.id +"&post=" +JSON.stringify(post))
+                                        "uri": ("https://icane.herokuapp.com/choice?dev_name="+ dev.dev_name +"&msg" +JSON.stringify(post.events[0].message))
                                     }
+                                    console.log(choic.uri);
+                                    console.log(choic.label);
                                     button.template.actions.push(choice);                                    
                                 }
                                 sent.push(button);
@@ -302,9 +304,9 @@ function linebotParser(req ,res){
                                     console.log(q.query); //?dev_name=...
 
                                     let dev = q.query.dev_name;
-                                    let msgid = q.query.msgid;
-                                    let post = JSON.parse(q.query.post);
-                                    let type = post.events[0].message.type;
+                                    let msg = q.query.msg;                                    
+                                    let type = msg.type;
+                                    let msgid = msg.id;
                                     
                                     if(type == 'image'){
                                         //set adrr
@@ -370,7 +372,7 @@ function linebotParser(req ,res){
                                                     },
                                                     json: {
                                                         'replyToken': replyToken,
-                                                        'messages': [post.events[0].message]
+                                                        'messages': [msg]
                                                     }
                                                 };
                                                 if(type == 'image'){
