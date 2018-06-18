@@ -362,7 +362,7 @@ function datareceiver(req,res){
                       "contents": [
                         {
                           "type": "text",
-                          "text": "請趕緊通話聯繫，確認狀況後送醫",
+                          "text": "請趕緊通話聯繫，確認狀況",
                         }                
                       ]
                     }              
@@ -370,7 +370,7 @@ function datareceiver(req,res){
         };
         
         if( data.alarm == 1){
-            msg.contents.header.contents[0].text = "!!跌倒了!!";
+            msg.contents.header.contents[0].text = "!!跌倒了!!\n---快聯繫---";
             msg.contents.hero = {
                 "type": "image",
                 "url": "https://lh3.googleusercontent.com/asSt1576xm1O1TJ3VhNIbOKRjRpX9-MvccKMdxZImhvMw5HgtVfaCe72aouni0r7_4JQZuQD7AK3tjI2GLjnnOVtYEuGrOuc1MUd36oMzT49SUFmGgpQ-XLA7b8HWlN6j7Jh9pfvx2lMRE2zUpegR--5-rmIf14CaH-fMuZutKJekhYwrNuYsH9GyavSlm9T26gkGqusqw3Ia9YRjKGaJ1vspp2MoFwg_23BAdkO89LM2kQDQ_QLW1uH6AtQl-aOrJdk01-oUPcTAuXADUuytvqE4MAjL0E1ptNkRUzbChVqNh6GDO0J0k_Qkmr8RaZ4cReblu26rEDPnj9FgMlVZn4uFAEtqmDpJ_Pu76gSkyc2CwWyLw1ZbFFi5-SkpI9dvZdhO2LENenzU6WJyVGFgk8LqhvYBDzJ-WcmRilaTj0SemoT1aO6-wMqFcp70V9JhWDSr_tsZcICUUNiZZKtkjJDJUKb5J6bcdIRugaEjitQ7dVR7pSHtgjDOrYtOXbkIN52JWXGSLebQ7UVJ6huWZtp8_B9qwynrKC215HVSYdfC55CnfguUcwOtZq8YTlTgFUZiX9nJ3PYcPh0OeN5U1vMhNnUGfNyS1am0pD-3LOORcNTW_bb8yNFB9yyRKZuX-ok1JQBnp1DQMRVTeKMMAebRCs=w316-h332-no",
@@ -506,7 +506,7 @@ function betteryschedule(){
                                   "contents": [
                                     {
                                       "type": "text",
-                                      "text": "請趕緊通話聯繫，確認狀況後送醫",
+                                      "text": "請趕緊通話聯繫，確認狀況",
                                     }                
                                   ]
                                 }              
