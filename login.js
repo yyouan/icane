@@ -277,7 +277,7 @@ function linebotParser(req ,res){
                                 }
                                 psql("SELECT * FROM ACCOUNTS WHERE dev_name=\'" + dev_name +"\' and line_id!=\'"+line_id+"\';").then(res=>{
                                     for(let id of res){
-                                        if(id.ishost == "1"){
+                                        if(recpt[0].ishost == "1"){
                                             text.text = "管理員：\n" + post.events[0].message.text;
                                         }else{
                                             text.text = "某監理帳號：\n" + post.events[0].message.text;
@@ -307,7 +307,7 @@ function linebotParser(req ,res){
                                     let choice = {
                                         "type": "uri",
                                         "label": dev.dev_name.replace(/\s+/g, ""),
-                                        "uri": "https://icane.herokuapp.com/choice?"+querystring.stringify({ dev_name: dev.dev_name.replace(/\s+/g, ""), msg :JSON.stringify(post.events[0].message)}) 
+                                        "uri": "https://icane.herokuapp.com/choice?"+querystring.stringify({ ishost: recpt[0].ishost ,line_id: line_id,dev_name: dev.dev_name.replace(/\s+/g, ""), msg :JSON.stringify(post.events[0].message)}) 
                                     }
                                     console.log(choice.uri);
                                     console.log(choice.label);
@@ -327,8 +327,7 @@ function linebotParser(req ,res){
                                 let nwimg;
                                 const domain="https://angleline.herokuapp.com";  
                                 let adrr="/";
-                                
-                                    
+                                                                    
                                     let q = url.parse(req.url,true);
                                     console.log(q.search.substr(1)); //?dev_name=...
                                     let data =querystring.parse(q.search.substr(1));
@@ -337,7 +336,9 @@ function linebotParser(req ,res){
                                     let msg = JSON.parse(data.msg);                                    
                                     let type = msg.type;
                                     let msgid = msg.id;
-                                    
+                                    let line_id = data.line_id;
+                                    let ishost = data.ishost;
+
                                     if(type == 'image'){
                                         //set adrr
                                         adrr+=String(msgid);
@@ -391,7 +392,18 @@ function linebotParser(req ,res){
                                     }
 
                                     function let_pushmessage(recpt){
-                                        psql("SELECT line_id FROM ACCOUNTS WHERE dev_name=\'"+ dev +"\';").then( clients =>{
+                                        let text ={
+                                            "type":"text",
+                                            "text":""
+                                        }                                        
+
+                                        if(ishost == "1"){
+                                            text.text="管理員：";
+                                        }else{
+                                            text.text="某監理帳號：";
+                                        }
+
+                                        psql("SELECT * FROM ACCOUNTS WHERE dev_name=\'" + dev +"\' and line_id!=\'"+ line_id+"\';").then( clients =>{
                                             for(client of clients){
                                                 var options = {
                                                     url: "https://api.line.me/v2/bot/message/push",
@@ -402,12 +414,12 @@ function linebotParser(req ,res){
                                                     },
                                                     json: {
                                                         'to': client.line_id.replace(/\s+/g, ""),
-                                                        'messages': [msg]
+                                                        'messages': [text,msg]
                                                     }
                                                 };
                                                 if(type == 'image'){
-                                                        options.json.messages[0].originalContentUrl=(domain+adrr);
-                                                        options.json.messages[0].previewImageUrl=(domain+adrr);
+                                                        options.json.messages[1].originalContentUrl=(domain+adrr);
+                                                        options.json.messages[1].previewImageUrl=(domain+adrr);
                                                         app.get(adrr,(req,res)=>{
                                                         //res.sendFile(__dirname+"/img.jpg");    
                                                         res.writeHead(200, {'Content-Type': 'image/jpeg' });
