@@ -106,7 +106,7 @@ function psql(command){
             .then(res => {
                 client.release();
                 for (let row of res.rows) {                
-                    recpt += row;
+                    recpt.push(row);
                     console.log( "(psql-query):"+ JSON.stringify(row));
                 }
                 resolve(recpt);
@@ -345,7 +345,7 @@ function datareceiver(req,res){
         psql("SELECT line_id FROM ACCOUNTS WHERE dev_name=\'" + data.dev_name +"\';").then(family=>{
                 let family_member = [];
                 for(let member in family){
-                    family_member += member.line_id;
+                    family_member.push(member.line_id);
                     console.log(member.line_id);
                 }
                 console.log(family_member.length);
