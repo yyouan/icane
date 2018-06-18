@@ -263,8 +263,8 @@ function linebotParser(req ,res){
                                 let rawdata = email.substr(5);
                                 let data = querystring.parse(rawdata);
                                 let name = data.dev;
-                                let email = data.phone;
-                                record_dev_name(name,line_id,"1",email);
+                                let phone = data.phone;
+                                record_dev_name(name,line_id,"1",phone);
                             
                                 let text ={
                                     "type":"text",
