@@ -277,55 +277,65 @@ function datareceiver(req,res){
         return stepcount;
     })
     .then( stepcount =>{
+        
 
-        var msg = {
-            "type": "bubble",
-            "header": {
-              "type": "box",
-              "layout": "vertical",
-              "contents": [
-                {
-                  "type": "text",
-                  "text": "一般通知訊息"
-                }
-              ]
-            },
-            "body": {
-              "type": "box",
-              "layout": "vertical",
-              "contents": [
-                {
-                  "type": "text",
-                  "text": "角度狀態： "+ (data.ang=='0')?"Standing":"Lying",
-                },                
-                {
-                    "type": "text",
-                    "text": "是否拿著？ "+ (data.isactive=='0')?"沒拿":"拿著",
+        var msg ={  
+            "type": "flex",
+            "altText": "this is a flex message",
+            "contents": {
+                "type": "bubble",
+                "header": {
+                  "type": "box",
+                  "layout": "vertical",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "一般通知訊息"
+                    }
+                  ]
                 },
-                {
-                    "type": "text",
-                    "text": "本日腳步數： "+ stepcount +"步",
-                }                
-              ]
-            }            
+                "body": {
+                  "type": "box",
+                  "layout": "vertical",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "角度狀態： "+ (data.ang=='0')?"Standing":"Lying",
+                    },                
+                    {
+                        "type": "text",
+                        "text": "是否拿著？ "+ (data.isactive=='0')?"沒拿":"拿著",
+                    },
+                    {
+                        "type": "text",
+                        "text": "本日腳步數： "+ stepcount +"步",
+                    }                
+                  ]
+                }            
+            }
         };
     
-        var errormsg = {
-            "type": "bubble",
-            "header": {
-              "type": "box",
-              "layout": "vertical",
-              "contents": [
+        var errormsg = {  
+            "type": "flex",
+            "altText": "this is a flex message",
+            "contents":
                 {
-                  "type": "text",
-                  "text": "故障訊息(連線／感測器)"
+                    "type": "bubble",
+                    "header": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                        {
+                        "type": "text",
+                        "text": "故障訊息(連線／感測器)"
+                        }
+                    ]
+                    },
+                    "hero": {
+                        "type": "image",
+                        "url": "https://photos.app.goo.gl/YbnwnaCfCZFCGLEL9",
+                    }            
                 }
-              ]
-            },
-            "hero": {
-                "type": "image",
-                "url": "https://photos.app.goo.gl/YbnwnaCfCZFCGLEL9",
-            }            
         };
         
         if( data.alarm == 1){
