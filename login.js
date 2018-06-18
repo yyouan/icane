@@ -368,6 +368,9 @@ function datareceiver(req,res){
 }
 
 function pushmessage(recpt,id){
+    recpt.forEach(element => {
+        console.log("pushmessage:"+element);
+    });
 
     var options = {
         url: "https://api.line.me/v2/bot/message/multicast",
