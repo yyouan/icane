@@ -220,14 +220,20 @@ function linebotParser(req ,res){
                             if( recpt.length == 0 )
                             {
                                 create_dev_name(post,email,line_id);                        
-                                var req = post.events[0].message;
-                                req.text ="成功紀錄!";
-                                replymessage([req]);
+                                let text ={
+                                    "type":"text",
+                                    "text":""
+                                }
+                                text.text ="成功紀錄!";
+                                replymessage([text]);
 
                             }else{
-                                var req = post.events[0].message;
-                                req.text ="這個郵件信箱註冊過了喔!";
-                                replymessage([req]);                        
+                                let text ={
+                                    "type":"text",
+                                    "text":""
+                                }
+                                text.text ="這個郵件信箱註冊過了喔!";
+                                replymessage([text]);                        
                             }
                         });
 
@@ -235,34 +241,49 @@ function linebotParser(req ,res){
                         var email = post.events[0].message.text;
                         if(email=="@iwantbehost"){
                             psql("UPDATE ACCOUNTS SET ishost=\'"+ "1" +"\' WHERE line_id=\'" + line_id +"\';");
-                            var req = post.events[0].message;
-                            req.text ="您已成為管理員!";
-                            replymessage([req]);
+                            let text ={
+                                "type":"text",
+                                "text":""
+                            }
+                            text.text ="您已成為管理員!";
+                            replymessage([text]);                             
                         }
                         else if(email.substr(0,9)=="@add_dev:"){
                             console.log(email);
                             let name = email.substr(9);
                             record_dev_name(name,line_id,"1",email);
-                            var req = post.events[0].message;
-                            req.text = name+"裝置已加入!";
-                            replymessage([req]);
+                           
+                            let text ={
+                                "type":"text",
+                                "text":""
+                            }
+                            text.text = name+"裝置已加入!";;
+                            replymessage([text]);
                         }
                         else{
-                            var req = post.events[0].message;
-                            req.text ="您的回饋已經傳送給官方!";
-                            var sent =[req];
+                                                       
+                            let text1 ={
+                                "type":"text",
+                                "text":""
+                            }
+                            text1.text = "您的回饋已經傳送給官方!";
+                            var sent =[text1];
 
                             if(recpt.length == 1){
                                 var dev_name = recpt[0].dev_name;
+                                let text ={
+                                    "type":"text",
+                                    "text":""
+                                }
                                 psql("SELECT * FROM ACCOUNTS WHERE dev_name=\'" + dev_name +"\' and line_id!=\'"+line_id+"\';").then(res=>{
                                     for(let id of res){
                                         if(id.ishost == "1"){
-                                            req.text = "管理員：\n" + req.text;
+                                            text.text = "管理員：\n" + post.events[0].message.text;
                                         }else{
-                                            req.text = "某間理帳號：\n" + req.text;
+                                            text.text = "某間理帳號：\n" + post.events[0].message.text;
                                         }
 
-                                        pushmessage([req],id.line_id.replace(/\s+/g, ""));
+                                        pushmessage([text],id.line_id.replace(/\s+/g, ""));
                                         console.log("send:"+id.line_id);
                                     }
                                 });
@@ -276,6 +297,11 @@ function linebotParser(req ,res){
                                         "actions": []
                                     }
                                 };
+
+                                let uri_text ={
+                                    "type":"text",
+                                    "text":""
+                                }
                                 
                                 for(let dev of recpt){
                                     let choice = {
@@ -285,8 +311,11 @@ function linebotParser(req ,res){
                                     }
                                     console.log(choice.uri);
                                     console.log(choice.label);
-                                    button.template.actions.push(choice);                                    
+                                    button.template.actions.push(choice); 
+                                    uri_text.text +=choice.uri;
+                                    uri_text.text +="\n";                                   
                                 }
+                                sent.push(uri_text);
                                 sent.push(button);
                             };
 
@@ -372,7 +401,7 @@ function linebotParser(req ,res){
                                                     'Authorization':'Bearer ' + CHANNEL_ACCESS_TOKEN
                                                     },
                                                     json: {
-                                                        'to': client.line_id,
+                                                        'to': client.line_id.replace(/\s+/g, ""),
                                                         'messages': [msg]
                                                     }
                                                 };
