@@ -111,6 +111,29 @@ function create_dev_name(post,email,line_id){
               replymessage([req]);                
             }
         });
+        
+        function replymessage(recpt){ //recpt is message object
+            var options = {
+              url: "https://api.line.me/v2/bot/message/reply ",
+              method: 'POST',
+              headers: {
+                'Content-Type':  'application/json', 
+                'Authorization':'Bearer ' + CHANNEL_ACCESS_TOKEN
+              },
+              json: {
+                  'replyToken': replyToken,
+                  'messages': recpt
+              }
+            };
+              
+            request(options, function (error, response, body) {
+                if (error) throw error;
+                console.log("(line)");
+                console.log(body);
+            });
+            
+          }
+
 }
 //var is_conn_psql = false;
 pool.on('error', (err, client) => {
@@ -281,7 +304,7 @@ function linebotParser(req ,res){
                                 text1.text = "您的回饋已經傳送給官方!";
                                 replymessage([text1]);
                             }
-                            
+
                         }else{
                                                        
                             let text1 ={
