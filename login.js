@@ -360,7 +360,7 @@ function datareceiver(req,res){
 function pushmessage(recpt,id){
 
     var options = {
-        url: "https://api.line.me/v2/bot/message/push ",
+        url: "https://api.line.me/v2/bot/message/multicast",
         method: 'POST',
         headers: {
           'Content-Type':  'application/json', 
