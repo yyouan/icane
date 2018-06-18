@@ -25,9 +25,9 @@ app.get('/data',datareceiver);
 
 //SQL
 /**
-     dev_name       |line_id        |times            | email              | last_call_time        |  stepcount | isgroup
+     dev_name       |line_id        |times            | email              | last_call_time        |  stepcount | isgroup |ishost
     ----------------+---------------+-----------------+--------------------------------------------------------------------
-    icane           | 0123456789012 | 0               | xu.6u.30@gmail.com | JSON(year,month,date) | int        | 是／否
+    icane           | 0123456789012 | 0               | xu.6u.30@gmail.com | JSON(year,month,date) | int        | 是／否  | 0/1
 */  
 
 //login message with recpt function:
@@ -60,13 +60,14 @@ function record_dev_name(name,id,isgroup,email){
             psql("UPDATE ACCOUNTS SET times=\'"+ "0" +"\' WHERE email=\'" + email +"\';");
             psql("UPDATE ACCOUNTS SET dev_name=\'"+ name +"\' WHERE email=\'" + email +"\';");
             psql("UPDATE ACCOUNTS SET isgroup=\'"+ isgroup +"\' WHERE email=\'" + email +"\';");
+            psql("UPDATE ACCOUNTS SET ishost=\'"+ "0" +"\' WHERE email=\'" + email +"\';");
             psql("UPDATE ACCOUNTS SET last_call_time=\'"+ JSON.stringify(time) +"\' WHERE email=\'" + email +"\';"); 
             psql("UPDATE ACCOUNTS SET stepcount=0 WHERE email=\'" + email +"\';");
             psql("UPDATE ACCOUNTS SET line_id=\'"+ id +"\' WHERE email=\'" + email +"\';");  
         }
     );      
 }
-function create_dev_name(email,line_id){
+function create_dev_name(post,email,line_id){
         let google_url = 'https://docs.google.com/spreadsheets/d/1VWr1uoN0n9KD3h74G3P7HItf8-Hg2Pg9lN8ygJwQH7w/gviz/tq?tqx=out:html&tq=select%20*%20where%20E%20=%20%27';
         google_url += (email +'%27&gid=1591596252%27');
         var options = {
@@ -218,7 +219,7 @@ function linebotParser(req ,res){
                         psql("SELECT * FROM ACCOUNTS WHERE email=\'" + email +"\';").then(recpt=>{
                             if( recpt.length == 0 )
                             {
-                                create_dev_name(email,line_id);                        
+                                create_dev_name(post,email,line_id);                        
                                 var req = post.events[0].message;
                                 req.text ="成功紀錄!";
                                 replymessage([req]);
@@ -231,9 +232,166 @@ function linebotParser(req ,res){
                         });
 
                     }else{
-                        var req = post.events[0].message;
-                        req.text ="您的回饋已經傳送給官方!";
-                        replymessage([req]);
+                        if(email="@iwantbehost"){
+                            psql("UPDATE ACCOUNTS SET ishost=\'"+ "1" +"\' WHERE line_id=\'" + line_id +"\';");
+                            var req = post.events[0].message;
+                            req.text ="您已成為管理員!";
+                            replymessage([req]);
+                        }
+                        else if(email.substr(0,9)="@add_dev:"){
+                            console.log(email);
+                            let name = email.substr(9);
+                            record_dev_name(name,line_id,isgroup,email);
+                        }
+                        else{
+                            var req = post.events[0].message;
+                            req.text ="您的回饋已經傳送給官方!";
+                            var sent =[req];
+
+                            if(recpt.length == 1){
+                                var dev_name = recpt[0].dev_name;
+                                psql("SELECT * FROM ACCOUNTS WHERE dev_name=\'" + dev_name +"\' and line_id!=\'"+line_id+"\';").then(res=>{
+                                    for(let id of res){
+                                        if(id.ishost == "1"){
+                                            req.text = "管理員：\n" + req.text;
+                                        }else{
+                                            req.text = "某間理帳號：\n" + req.text;
+                                        }
+
+                                        pushmessage([req],id.line_id.replace(/\s+/g, ""));
+                                        console.log("send:"+id.line_id);
+                                    }
+                                });
+                            }else{
+                                let button = {
+                                    "type": "template",
+                                    "altText": "This is a buttons template",
+                                    "template": {
+                                        "type": "buttons",                    
+                                        "text": "按這裡註冊資料",                                        
+                                        "actions": []
+                                    }
+                                };
+                                
+                                for(let dev of recpt){
+                                    let choice = {
+                                        "type": "uri",
+                                        "label": dev.dev_name,
+                                        "uri": ("https://icane.herokuapp.com/choice?dev_name="+ dev.dev_name +"&msgid=" +post.events[0].message.id +"&post=" +JSON.stringify(post))
+                                    }
+                                    button.template.actions.push(choice);                                    
+                                }
+                                sent.push(button);
+                            };
+
+                            replymessage(sent);
+
+                            app.get('/choice',(req,res)=>{
+
+                                //route
+                                let nwimg;
+                                const domain="https://angleline.herokuapp.com";  
+                                let adrr="/";
+                                
+                                    
+                                    let q = url.parse(req.url,true);
+                                    console.log(q.query); //?dev_name=...
+
+                                    let dev = q.query.dev_name;
+                                    let msgid = q.query.msgid;
+                                    let post = JSON.parse(q.query.post);
+                                    let type = post.events[0].message.type;
+                                    
+                                    if(type == 'image'){
+                                        //set adrr
+                                        adrr+=String(msgid);
+                                        adrr+=".jpg";
+                                        console.log(adrr);
+                                        // Configure the request
+                                        let getimage=new Promise((resolve,reject)=>{
+                                        let options = {
+                                            url: 'https://api.line.me/v2/bot/message/'+ msgid +'/content',
+                                            method: 'GET',
+                                            headers: {                
+                                            'Authorization':'Bearer ' + CHANNEL_ACCESS_TOKEN                  
+                                            },
+                                            encoding: null
+                                        }
+                            
+                                        // Start the request
+
+                                        request(options, function (error, response, body) {
+                                            if (!error && response.statusCode == 200) {
+                                            nwimg = body;
+                                            console.log(body);
+                                            resolve(body);                  
+                                            }else{
+                                            //console.log();
+                                            reject("!!!!!error when recpt image!!!!!");                
+                                            }
+                                        });              
+                                        });
+                                        
+                                        getimage            
+                                        .then((body)=>{
+                                        //fs.writeFile(__dirname+"/img.jpg","");
+                                        /**fs.writeFile(__dirname+"/img.jpg",body,(err)=>{
+                                            if(err){
+                                            console.log("(writefile)"+err);
+                                            }else{                  
+                                            console.log("the file was saved");
+                                            //console.log(body);
+                                            }
+                                        });**/              
+                                        return Promise.resolve(body); 
+                                        })
+                                        .then(let_pushmessage)
+                                        .catch((err)=>{
+                                        console.log("(linebotpromise)"+err);
+                                        }
+                                        );          
+                                    }else{
+                                        let_pushmessage(nwimg);
+                                    }
+
+                                    function let_sendmessage(recpt){
+                                        psql("SELECT line_id FROM ACCOUNTS WHERE dev_name=\'"+ dev +"\';").then( clients =>{
+                                            for(client of clients){
+                                                var options = {
+                                                    url: "https://api.line.me/v2/bot/message/reply ",
+                                                    method: 'POST',
+                                                    headers: {
+                                                    'Content-Type':  'application/json', 
+                                                    'Authorization':'Bearer ' + CHANNEL_ACCESS_TOKEN
+                                                    },
+                                                    json: {
+                                                        'replyToken': replyToken,
+                                                        'messages': [post.events[0].message]
+                                                    }
+                                                };
+                                                if(type == 'image'){
+                                                        options.json.messages[0].originalContentUrl=(domain+adrr);
+                                                        options.json.messages[0].previewImageUrl=(domain+adrr);
+                                                        app.get(adrr,(req,res)=>{
+                                                        //res.sendFile(__dirname+"/img.jpg");    
+                                                        res.writeHead(200, {'Content-Type': 'image/jpeg' });
+                                                        res.end(nwimg, 'binary');
+                                                        });
+                                                }  
+                                                request(options, function (error, response, body) {
+                                                    if (error) throw error;
+                                                    console.log("(line)");
+                                                    console.log(body);
+                                                });
+                                                //create server
+                                            }                                            
+                                        });                                       
+          
+                                    }        
+    
+
+                            });
+                        }
                     }    
                 });                
                             
