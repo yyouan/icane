@@ -209,84 +209,179 @@ function linebotParser(req ,res){
         
         if (posttype == 'message'){
             
-            if(post.events[0].message.type == 'text'){
+            if(true){
                 
                 psql("SELECT * FROM ACCOUNTS WHERE line_id=\'" + line_id +"\';")
                 .then( recpt =>{
                     if( recpt.length == 0)   
                     {
-                        var email = post.events[0].message.text;
-                        psql("SELECT * FROM ACCOUNTS WHERE email=\'" + email +"\';").then(recpt=>{
-                            if( recpt.length == 0 )
-                            {
-                                create_dev_name(post,email,line_id);                        
-                                let text ={
-                                    "type":"text",
-                                    "text":""
-                                }
-                                text.text ="成功紀錄!";
-                                replymessage([text]);
+                        if(post.events[0].message.type == 'text'){
+                            var email = post.events[0].message.text;
+                            psql("SELECT * FROM ACCOUNTS WHERE email=\'" + email +"\';").then(recpt=>{
+                                if( recpt.length == 0 )
+                                {
+                                    create_dev_name(post,email,line_id);                        
+                                    let text ={
+                                        "type":"text",
+                                        "text":""
+                                    }
+                                    text.text ="成功紀錄!";
+                                    replymessage([text]);
 
-                            }else{
-                                let text ={
-                                    "type":"text",
-                                    "text":""
+                                }else{
+                                    let text ={
+                                        "type":"text",
+                                        "text":""
+                                    }
+                                    text.text ="這個郵件信箱註冊過了喔!";
+                                    replymessage([text]);                        
                                 }
-                                text.text ="這個郵件信箱註冊過了喔!";
-                                replymessage([text]);                        
+                            });
+                        }else{
+                            let text ={
+                                "type":"text",
+                                "text":""
                             }
-                        });
+                            text.text ="EASTER_EGG!請輸入正確訊息";
+                            replymessage([text]);
+                        }                        
 
                     }else{
-                        var email = post.events[0].message.text;
-                        if(email=="@iwantbehost"){
-                            psql("UPDATE ACCOUNTS SET ishost=\'"+ "1" +"\' WHERE line_id=\'" + line_id +"\';");
-                            let text ={
-                                "type":"text",
-                                "text":""
+                        if(post.events[0].message.type == 'text'){
+                            var email = post.events[0].message.text;
+                            if(email=="@iwantbehost"){
+                                psql("UPDATE ACCOUNTS SET ishost=\'"+ "1" +"\' WHERE line_id=\'" + line_id +"\';");
+                                let text ={
+                                    "type":"text",
+                                    "text":""
+                                }
+                                text.text ="您已成為管理員!";
+                                replymessage([text]);                             
                             }
-                            text.text ="您已成為管理員!";
-                            replymessage([text]);                             
-                        }
-                        else if(email.substr(0,9)=="@add_dev:"){
-                            console.log(email);
-                            let name = email.substr(9);
-                            record_dev_name(name,line_id,"1",email);
-                           
-                            let text ={
-                                "type":"text",
-                                "text":""
+                            else if(email.substr(0,9)=="@add_dev:"){
+                                console.log(email);
+                                let name = email.substr(9);
+                                record_dev_name(name,line_id,"1",email);
+                            
+                                let text ={
+                                    "type":"text",
+                                    "text":""
+                                }
+                                text.text = name+"裝置已加入!";;
+                                replymessage([text]);
                             }
-                            text.text = name+"裝置已加入!";;
-                            replymessage([text]);
-                        }
-                        else{
+                        }else{
                                                        
                             let text1 ={
                                 "type":"text",
                                 "text":""
                             }
                             text1.text = "您的回饋已經傳送給官方!";
-                            var sent =[text1];
+                            var sent =[text1];                            
 
                             if(recpt.length == 1){
-                                var dev_name = recpt[0].dev_name;
-                                let text ={
-                                    "type":"text",
-                                    "text":""
-                                }
-                                psql("SELECT * FROM ACCOUNTS WHERE dev_name=\'" + dev_name +"\' and line_id!=\'"+line_id+"\';").then(res=>{
-                                    for(let id of res){
-                                        if(recpt[0].ishost == "1"){
-                                            text.text = "管理員：\n" + post.events[0].message.text;
-                                        }else{
-                                            text.text = "某監理帳號：\n" + post.events[0].message.text;
-                                        }
-
-                                        pushmessage([text],id.line_id.replace(/\s+/g, ""));
-                                        console.log("send:"+id.line_id);
+                                var dev = recpt[0].dev_name;
+                                let msg = post.events[0].message;                                    
+                                let type = msg.type;
+                                let msgid = msg.id;                                
+                                let ishost = recpt[0].ishost;
+                                if(type == 'image'){
+                                    //set adrr
+                                    adrr+=String(msgid);
+                                    adrr+=".jpg";
+                                    console.log(adrr);
+                                    // Configure the request
+                                    let getimage=new Promise((resolve,reject)=>{
+                                    let options = {
+                                        url: 'https://api.line.me/v2/bot/message/'+ msgid +'/content',
+                                        method: 'GET',
+                                        headers: {                
+                                        'Authorization':'Bearer ' + CHANNEL_ACCESS_TOKEN                  
+                                        },
+                                        encoding: null
                                     }
-                                });
+                        
+                                    // Start the request
+
+                                    request(options, function (error, response, body) {
+                                        if (!error && response.statusCode == 200) {
+                                        nwimg = body;
+                                        console.log(body);
+                                        resolve(body);                  
+                                        }else{
+                                        //console.log();
+                                        reject("!!!!!error when recpt image!!!!!");                
+                                        }
+                                    });              
+                                    });
+                                    
+                                    getimage            
+                                    .then((body)=>{
+                                    //fs.writeFile(__dirname+"/img.jpg","");
+                                    /**fs.writeFile(__dirname+"/img.jpg",body,(err)=>{
+                                        if(err){
+                                        console.log("(writefile)"+err);
+                                        }else{                  
+                                        console.log("the file was saved");
+                                        //console.log(body);
+                                        }
+                                    });**/              
+                                    return Promise.resolve(body); 
+                                    })
+                                    .then(let_pushmessage)
+                                    .catch((err)=>{
+                                    console.log("(linebotpromise)"+err);
+                                    }
+                                    );          
+                                }else{
+                                    let_pushmessage(nwimg);
+                                }
+
+                                function let_pushmessage(recpt){
+                                    let text ={
+                                        "type":"text",
+                                        "text":""
+                                    }                                        
+
+                                    if(ishost == "1"){
+                                        text.text="管理員：";
+                                    }else{
+                                        text.text="某監理帳號：";
+                                    }
+
+                                    psql("SELECT * FROM ACCOUNTS WHERE dev_name=\'" + dev +"\' and line_id!=\'"+ line_id+"\';").then( clients =>{
+                                        for(client of clients){
+                                            var options = {
+                                                url: "https://api.line.me/v2/bot/message/push",
+                                                method: 'POST',
+                                                headers: {
+                                                'Content-Type':  'application/json', 
+                                                'Authorization':'Bearer ' + CHANNEL_ACCESS_TOKEN
+                                                },
+                                                json: {
+                                                    'to': client.line_id.replace(/\s+/g, ""),
+                                                    'messages': [text,msg]
+                                                }
+                                            };
+                                            if(type == 'image'){
+                                                    options.json.messages[1].originalContentUrl=(domain+adrr);
+                                                    options.json.messages[1].previewImageUrl=(domain+adrr);
+                                                    app.get(adrr,(req,res)=>{
+                                                    //res.sendFile(__dirname+"/img.jpg");    
+                                                    res.writeHead(200, {'Content-Type': 'image/jpeg' });
+                                                    res.end(nwimg, 'binary');
+                                                    });
+                                            }  
+                                            request(options, function (error, response, body) {
+                                                if (error) throw error;
+                                                console.log("(line)");
+                                                console.log(body);
+                                            });
+                                            //create server
+                                        }                                            
+                                    });                                       
+      
+                                }  
                             }else{
                                 let button = {
                                     "type": "template",
