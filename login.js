@@ -480,24 +480,39 @@ function betteryschedule(){
                 )))
                 )))){}
                 else{
-                    var errormsg={
-                        "type": "bubble",
-                        "header": {
-                          "type": "box",
-                          "layout": "vertical",
-                          "contents": [
+                    var errormsg={  
+                        "type": "flex",
+                        "altText": "this is a flex message",
+                        "contents":
                             {
-                              "type": "text",
-                              "text": "故障訊息(連線／沒電)"
+                                "type": "bubble",
+                                "header": {
+                                "type": "box",
+                                "layout": "vertical",
+                                "contents": [
+                                    {
+                                    "type": "text",
+                                    "text": "故障訊息(連線／感測器)"
+                                    }
+                                ]
+                                },
+                                "hero": {
+                                    "type": "image",
+                                    "url": "https://lh3.googleusercontent.com/17C-0ZS4bWcaQkt_moNI_RrmD-UsijUKwWHwgpDWGtC2t2U-zXyIyerDf7CM2OKH1kWJ71ne0bs53UM5zHSu-Qdy6bYjUYoctDXEmLuqG0Nzd8aPGyQOa-PN8ctFPtDiAuA65BuxHu-SScrlVbLQQ4vvJwbsFOT2C-0NEi8P3NRMcMlT2C1-DcoH8ByfAUDMAcwoj_QlRYUMgFUGMSLY9it8vMNeoImh8sZtGNYcbDVBAOhoD7GKhbHlwY5fCKjo2-kV3MpyT2XUnZOfHDO0sVOo-W5Ue4Ov_S1DCqhDVn2v4qUQ5pkvHBuYKU3Ag5pJ84niMiNNJSxHUqBuZrRVWGRkQul2semp3hNka5YFS3MWakkBmJ1KyDG5O21iajDSeLSeQ6-LekszY-uFZjBz9nFsam5PwM5NAKueeJnKKmXkumX0lUzgFjyqEG481sWh9CAji2b_J0N_NfgIMJmx74AH7xpP2mrGP3mhdLJKraM0rh4a-Wvx8Ma_QMGHBiRUueMINFiqAy6SxYGs1uaNsnT_yj0pwi0YqFP2k33biXbXZWaIBmnvpXq4GFBs11lwp__44zlwkc53XcF7SNzfJp1DuQ_a7zzbFA=w393-h367-no", //use 圖片位址
+                                },
+                                "body": {
+                                  "type": "box",
+                                  "layout": "vertical",
+                                  "contents": [
+                                    {
+                                      "type": "text",
+                                      "text": "請趕緊通話聯繫，確認狀況後送醫",
+                                    }                
+                                  ]
+                                }              
                             }
-                          ]
-                        },
-                        "hero": {
-                            "type": "image",
-                            "url": "https://photos.app.goo.gl/YbnwnaCfCZFCGLEL9",
-                        }            
                     };
-                    pushmessage([recpt],client.replace(/\s+/g, ""));
+                    pushmessage([errormsg],client.replace(/\s+/g, ""));
                 }
             }
         });
