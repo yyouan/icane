@@ -408,6 +408,7 @@ var server = app.listen((process.env.PORT || 8080), function() {
 //!!!!!
 
 //--------------always on----------------------------
+betteryschedule();
 function betteryschedule(){
     schedule.scheduledJob('0 15 * * * *',scanAccount);
     schedule.scheduledJob('0 30 * * * *',scanAccount);
