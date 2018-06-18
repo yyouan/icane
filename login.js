@@ -410,10 +410,10 @@ var server = app.listen((process.env.PORT || 8080), function() {
 //--------------always on----------------------------
 betteryschedule();
 function betteryschedule(){
-    schedule.scheduledJob('0 15 * * * *',scanAccount);
-    schedule.scheduledJob('0 30 * * * *',scanAccount);
-    schedule.scheduledJob('0 45 * * * *',scanAccount);
-    schedule.scheduledJob('0 00 * * * *',scanAccount);
+    schedule.scheduledJobs('0 15 * * * *',scanAccount);
+    schedule.scheduledJobs('0 30 * * * *',scanAccount);
+    schedule.scheduledJobs('0 45 * * * *',scanAccount);
+    schedule.scheduledJobs('0 00 * * * *',scanAccount);
     
     function scanAccount(){
         var date = new Date();
