@@ -339,8 +339,8 @@ function datareceiver(req,res){
         };
         
         if( data.alarm == 1){
-            msg.header.contents[0].text = "!!警示訊息!!";
-            msg.hero = {
+            msg.contents.header.contents[0].text = "!!警示訊息!!";
+            msg.contents.hero = {
                 "type": "image",
                 "url": "https://photos.app.goo.gl/j2hwSjuqgRFNPBhG9",
             }
