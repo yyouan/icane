@@ -100,15 +100,15 @@ function create_dev_name(post,email,line_id){
                   console.log("is_group:"+ isgroup);
                   if(dev_name !="&nbsp" && isgroup !="&nbsp"){
                     record_dev_name(dev_name,line_id,isgroup,email);
-                    resolve();                                    
+                    resolve(isgroup);                                    
                   }else{                
-                    reject();
+                    reject(isgroup);
                   }             
                   
                 }else{
                   console.log(error);
                   console.log("!!!!!error when recpt from google sheet!!!!!");              
-                  reject();               
+                  reject(isgroup);               
                 }
             });
         });
@@ -227,17 +227,17 @@ function linebotParser(req ,res){
                                         "type":"text",
                                         "text":""
                                     }
-                                    
+
                                     create_dev_name(post,email,line_id)
                                     .then(
-                                        ()=>{text.text ="成功紀錄!";}
+                                        (res)=>{text.text ="成功紀錄!";}
                                     )
                                     .catch(
-                                        ()=>{text.text ="還沒有填表單喔!";}
+                                        (res)=>{text.text ="還沒有填表單喔!";}
+                                    ).then(
+                                        ()=>{replymessage([text]);}                                        
                                     );
-
-                                    replymessage([text]);
-
+                                    
                                 }else{
                                     let text ={
                                         "type":"text",
