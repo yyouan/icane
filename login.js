@@ -365,14 +365,14 @@ function linebotParser(req ,res){
                                         psql("SELECT line_id FROM ACCOUNTS WHERE dev_name=\'"+ dev +"\';").then( clients =>{
                                             for(client of clients){
                                                 var options = {
-                                                    url: "https://api.line.me/v2/bot/message/reply ",
+                                                    url: "https://api.line.me/v2/bot/message/push",
                                                     method: 'POST',
                                                     headers: {
                                                     'Content-Type':  'application/json', 
                                                     'Authorization':'Bearer ' + CHANNEL_ACCESS_TOKEN
                                                     },
                                                     json: {
-                                                        'replyToken': replyToken,
+                                                        'to': client.line_id,
                                                         'messages': [msg]
                                                     }
                                                 };
