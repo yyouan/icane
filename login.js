@@ -76,40 +76,44 @@ function create_dev_name(post,email,line_id){
         }
         let dev_name = "";
         let isgroup = "";
-        let g_error = 0;
-        request(options, function (error, response, body) {
-            if (!error && response.statusCode == 200) {
-              console.log("(crt_dev_name)"+options.url);
-              console.log("(crt_dev_name)"+email);
-              console.log("(crt_dev_name)"+line_id);
-              console.log(body);              
-              //console.log(typeof(body));
-              var parser = new DomParser();
-              var doc = parser.parseFromString(body, "text/xml");
-              console.log(doc.getElementsByTagName("tr"));
-              console.log(doc);
-              var values = doc.getElementsByTagName("tr")[1].getElementsByTagName("td");
-              for (let value of values){
-                console.log(value.innerHTML);
-              }
-              dev_name = values[1].innerHTML;
-              isgroup = values[5].innerHTML;              
-              console.log("dev_name:"+ dev_name);
-              console.log("is_group:"+ isgroup);
-              if(dev_name !="&nbsp" && isgroup !="&nbsp"){
-                record_dev_name(dev_name,line_id,isgroup,email);
-                g_error=0;                
-              }else{                
-                g_error=1;
-              }             
-              
-            }else{
-              console.log(error);
-              console.log("!!!!!error when recpt from google sheet!!!!!");              
-              g_error=1;               
-            }
+
+        return new Promise( (resolve,reject)=>{
+
+            request(options, function (error, response, body) {
+                if (!error && response.statusCode == 200) {
+                  console.log("(crt_dev_name)"+options.url);
+                  console.log("(crt_dev_name)"+email);
+                  console.log("(crt_dev_name)"+line_id);
+                  console.log(body);              
+                  //console.log(typeof(body));
+                  var parser = new DomParser();
+                  var doc = parser.parseFromString(body, "text/xml");
+                  console.log(doc.getElementsByTagName("tr"));
+                  console.log(doc);
+                  var values = doc.getElementsByTagName("tr")[1].getElementsByTagName("td");
+                  for (let value of values){
+                    console.log(value.innerHTML);
+                  }
+                  dev_name = values[1].innerHTML;
+                  isgroup = values[5].innerHTML;              
+                  console.log("dev_name:"+ dev_name);
+                  console.log("is_group:"+ isgroup);
+                  if(dev_name !="&nbsp" && isgroup !="&nbsp"){
+                    record_dev_name(dev_name,line_id,isgroup,email);
+                    resolve();                                    
+                  }else{                
+                    reject();
+                  }             
+                  
+                }else{
+                  console.log(error);
+                  console.log("!!!!!error when recpt from google sheet!!!!!");              
+                  reject();               
+                }
+            });
         });
-        return g_error;
+        
+        
 }
 //var is_conn_psql = false;
 pool.on('error', (err, client) => {
@@ -223,12 +227,15 @@ function linebotParser(req ,res){
                                         "type":"text",
                                         "text":""
                                     }
-                                    var error = create_dev_name(post,email,line_id);
-                                    if(error == 1){
-                                        text.text ="還沒有填表單喔!";
-                                    }else{
-                                        text.text ="成功紀錄!";
-                                    }
+                                    
+                                    create_dev_name(post,email,line_id)
+                                    .then(
+                                        ()=>{text.text ="成功紀錄!";}
+                                    )
+                                    .catch(
+                                        ()=>{text.text ="還沒有填表單喔!";}
+                                    );
+
                                     replymessage([text]);
 
                                 }else{
