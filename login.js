@@ -76,7 +76,7 @@ function create_dev_name(post,email,line_id){
         }
         let dev_name = "";
         let isgroup = "";
-        let error = 0;
+        let g_error = 0;
         request(options, function (error, response, body) {
             if (!error && response.statusCode == 200) {
               console.log("(crt_dev_name)"+options.url);
@@ -98,18 +98,18 @@ function create_dev_name(post,email,line_id){
               console.log("is_group:"+ isgroup);
               if(dev_name !="&nbsp" && isgroup !="&nbsp"){
                 record_dev_name(dev_name,line_id,isgroup,email);
-                error=0;                
+                g_error=0;                
               }else{                
-                error=1;
+                g_error=1;
               }             
               
             }else{
               console.log(error);
               console.log("!!!!!error when recpt from google sheet!!!!!");              
-              error=1;               
+              g_error=1;               
             }
         });
-        return error;
+        return g_error;
 }
 //var is_conn_psql = false;
 pool.on('error', (err, client) => {
