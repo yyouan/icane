@@ -366,8 +366,8 @@ function linebotParser(req ,res){
                                             if(type == 'image'){
                                                     options.json.messages[1].originalContentUrl=(domain+adrr);
                                                     options.json.messages[1].previewImageUrl=(domain+adrr);
-                                                    options.json.messages[0].text +="\n";
-                                                    options.json.messages[0].text +=(domain+adrr);
+                                                    //options.json.messages[0].text +="\n";
+                                                    //options.json.messages[0].text +=(domain+adrr);
                                                     app.get(adrr,(req,res)=>{
                                                     //res.sendFile(__dirname+"/img.jpg");    
                                                     res.writeHead(200, {'Content-Type': 'image/jpeg' });
@@ -517,8 +517,8 @@ function linebotParser(req ,res){
                                                 if(type == 'image'){
                                                         options.json.messages[1].originalContentUrl=(domain+adrr);
                                                         options.json.messages[1].previewImageUrl=(domain+adrr);
-                                                        options.json.messages[0].text +="\n";
-                                                        options.json.messages[0].text +=(domain+adrr);
+                                                        //options.json.messages[0].text +="\n";
+                                                        //options.json.messages[0].text +=(domain+adrr);
                                                         app.get(adrr,(req,res)=>{
                                                         //res.sendFile(__dirname+"/img.jpg");    
                                                         res.writeHead(200, {'Content-Type': 'image/jpeg' });
