@@ -247,6 +247,7 @@ function linebotParser(req ,res){
                         }                        
 
                     }else{
+
                         if(post.events[0].message.type == 'text'){
                             var email = post.events[0].message.text;
                             if(email=="@iwantbehost"){
@@ -272,7 +273,15 @@ function linebotParser(req ,res){
                                 }
                                 text.text = name+"裝置已加入!";;
                                 replymessage([text]);
+                            }else{
+                                let text1 ={
+                                    "type":"text",
+                                    "text":""
+                                }
+                                text1.text = "您的回饋已經傳送給官方!";
+                                replymessage([text1]);
                             }
+                            
                         }else{
                                                        
                             let text1 ={
