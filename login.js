@@ -96,44 +96,19 @@ function create_dev_name(post,email,line_id){
               console.log("dev_name:"+ dev_name);
               console.log("is_group:"+ isgroup);
               if(dev_name !="&nbsp" && isgroup !="&nbsp"){
-                record_dev_name(dev_name,line_id,isgroup,email);                
-              }else{
-                var req = post.events[0].message;
-                req.text ="您還沒填表單喔!";
-                replymessage([req]);
+                record_dev_name(dev_name,line_id,isgroup,email);
+                return 0;                
+              }else{                
+                return 1;
               }             
               
             }else{
               console.log(error);
-              console.log("!!!!!error when recpt from google sheet!!!!!");
-              var req = post.events[0].message;
-              req.text ="您還沒填表單喔!";
-              replymessage([req]);                
+              console.log("!!!!!error when recpt from google sheet!!!!!");              
+              return 1;                
             }
         });
         
-        function replymessage(recpt){ //recpt is message object
-            var options = {
-              url: "https://api.line.me/v2/bot/message/reply ",
-              method: 'POST',
-              headers: {
-                'Content-Type':  'application/json', 
-                'Authorization':'Bearer ' + CHANNEL_ACCESS_TOKEN
-              },
-              json: {
-                  'replyToken': replyToken,
-                  'messages': recpt
-              }
-            };
-              
-            request(options, function (error, response, body) {
-                if (error) throw error;
-                console.log("(line)");
-                console.log(body);
-            });
-            
-          }
-
 }
 //var is_conn_psql = false;
 pool.on('error', (err, client) => {
@@ -243,12 +218,16 @@ function linebotParser(req ,res){
                             psql("SELECT * FROM ACCOUNTS WHERE email=\'" + email +"\';").then(recpt=>{
                                 if( recpt.length == 0 )
                                 {
-                                    create_dev_name(post,email,line_id);                        
                                     let text ={
                                         "type":"text",
                                         "text":""
                                     }
-                                    text.text ="成功紀錄!";
+                                    var error = create_dev_name(post,email,line_id);
+                                    if(error == 1){
+                                        text.text ="還沒有填表單喔!";
+                                    }else{
+                                        text.text ="成功紀錄!";
+                                    }
                                     replymessage([text]);
 
                                 }else{
