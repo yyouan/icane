@@ -613,7 +613,7 @@ function datareceiver(req,res){
 
     var year = date.getFullYear();
 
-    var month = date.getMonth() ;
+    var month = date.getMonth()+1;
     month = (month < 10 ? "0" : "") + month;
 
     var day  = date.getDate();
@@ -623,7 +623,7 @@ function datareceiver(req,res){
         "min":min,
         "hour":hour,
         "day" :day,
-        "month":(month+1),
+        "month":month,
         "year":year
     }
 
