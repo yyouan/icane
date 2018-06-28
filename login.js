@@ -296,7 +296,8 @@ function linebotParser(req ,res){
                             }
 
                         }
-                        if(gate == true){
+
+                        if(gate == false){
                                                        
                             let text1 ={
                                 "type":"text",
