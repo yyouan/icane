@@ -262,8 +262,11 @@ function linebotParser(req ,res){
                         }                        
 
                     }else{
+                        let gate = false;
 
                         if(post.events[0].message.type == 'text'){
+
+                            gate = true;
                             var email = post.events[0].message.text;
                             if(email=="@iwantbehost"){
                                 psql("UPDATE ACCOUNTS SET ishost=\'"+ "1" +"\' WHERE line_id=\'" + line_id +"\';");
@@ -289,15 +292,11 @@ function linebotParser(req ,res){
                                 text.text = name+"裝置已加入!";;
                                 replymessage([text]);
                             }else{
-                                let text1 ={
-                                    "type":"text",
-                                    "text":""
-                                }
-                                text1.text = "您的回饋已經傳送給官方!";
-                                replymessage([text1]);
+                                gate = false;
                             }
 
-                        }else{
+                        }
+                        if(gate == true){
                                                        
                             let text1 ={
                                 "type":"text",
