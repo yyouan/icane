@@ -799,7 +799,7 @@ function betteryschedule(){
                 var clientmin=parseInt(JSON.parse(client.last_call_time).min);
                 var clienthour=parseInt(JSON.parse(client.last_call_time).hour);
                 var clientday=parseInt(JSON.parse(client.last_call_time).day);
-                var clientmonth= (parseInt(JSON.parse(client.last_call_time).month)+1);
+                var clientmonth= (parseInt(JSON.parse(client.last_call_time).month));
                 var clientyear=parseInt(JSON.parse(client.last_call_time).year);
                 var alarm = false;
                 console.log([clientmin,clienthour,clientday,clientmonth,clientyear].toString());
