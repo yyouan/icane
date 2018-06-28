@@ -623,7 +623,7 @@ function datareceiver(req,res){
         "min":min,
         "hour":hour,
         "day" :day,
-        "month":month,
+        "month":(month+1),
         "year":year
     }
 
