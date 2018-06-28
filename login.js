@@ -90,20 +90,25 @@ function create_dev_name(post,email,line_id){
                   var doc = parser.parseFromString(body, "text/xml");
                   console.log(doc.getElementsByTagName("tr"));
                   console.log(doc);
-                  var values = doc.getElementsByTagName("tr")[1].getElementsByTagName("td");
-                  for (let value of values){
-                    console.log(value.innerHTML);
+                  if (typeof doc.getElementsByTagName("tr")[1] === 'undefined'){
+                      reject(isgroup);
                   }
-                  dev_name = values[1].innerHTML;
-                  isgroup = values[5].innerHTML;              
-                  console.log("dev_name:"+ dev_name);
-                  console.log("is_group:"+ isgroup);
-                  if(dev_name !="&nbsp" && isgroup !="&nbsp"){
-                    record_dev_name(dev_name,line_id,isgroup,email);
-                    resolve(isgroup);                                    
-                  }else{                
-                    reject(isgroup);
-                  }             
+                  else{
+                    var values = doc.getElementsByTagName("tr")[1].getElementsByTagName("td");
+                    for (let value of values){
+                        console.log(value.innerHTML);
+                    }
+                    dev_name = values[1].innerHTML;
+                    isgroup = values[5].innerHTML;              
+                    console.log("dev_name:"+ dev_name);
+                    console.log("is_group:"+ isgroup);
+                    if(dev_name !="&nbsp" && isgroup !="&nbsp"){
+                        record_dev_name(dev_name,line_id,isgroup,email);
+                        resolve(isgroup);                                    
+                    }else{                
+                        reject(isgroup);
+                    }
+                  }                              
                   
                 }else{
                   console.log(error);
