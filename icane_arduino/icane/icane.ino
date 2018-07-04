@@ -33,22 +33,6 @@ const int sd_pin = 8;
 const int sd_pow_pin = 7;
 **/
 
-//----------------todo-------------------------
-/**
- * 1.reduce 配重，sensor太靈敏
- */
-//---------------------------------------------
-
-//----------------test_work--------------------
-/**
- * 1.connect to NTU
- * 2.compile
- * 3.use reset button to "stop beeping"
- * 4.lift the cane and let it flow down
- * 5.old man hold the cane and hit someone
- */
-//---------------------------------------------
-
 //--------------------parameter----------------
 const int _touchgate=500; //(untouch less than _touchgate viewed as "touched") //(dealta h=1m)
 const int _vibrategate=800;
@@ -75,10 +59,6 @@ const int _buffertime=20;//second
 const int _max_data_inpackage=1000; 
 //---------------------------------------------
 
-#define IP "184.106.153.149" // ThingSpeak IP Address: 184.106.153.149
-// 使用 GET 傳送資料的格式
-// GET /update?key=[THINGSPEAK_KEY]&field1=[data 1]&filed2=[data 2]...;
-String GET = "GET /update?key=7LKVJXP7BOYEJE58";
 volatile bool istouch=0;
 volatile bool angle=0,alarm=0,isactive=0;
 volatile unsigned long lasttouchtime=0;
@@ -93,46 +73,11 @@ bool connerror=0;
 int times=0;
 int maxvibrate=0;
 
-//--------------buffer------------------------------------
-/**struct Record
-{
-   short vibrate;
-   bool angle;
-   bool alarm;
-   bool isactive;
-};
-Record buffermem[_max_data_inpackage];
-int bufferptr=0;
-void storeBuffer(String Vib, String Ang, String Alarm,String Isactive){
-  Record data;
-  data.vibrate=Vib;
-  data.angle=Ang;
-  data.alarm=Alarm;
-  data.isactive=Isactive;
-  if(bufferptr>(_max_data_inpackage-1)){
-    for(int i=0;i<(_max_data_inpackage-1);++i){
-      buffermem[i]=buffermem[i+1];
-    }
-    buffermem[_max_data_inpackage-1]=data;
-  }
-  else{
-    buffermem[bufferptr]=data;
-    bufferptr++;
-  }
-}
-void resetBuffer(){
-  bufferptr=0;
-};
-**/
-//----------------------------------------------------------
-
 void setup() {      
     Serial.begin( _baudrate );
-    debug.begin( _baudrate );
-    //sendDebug("AT");
-    //Loding("sent AT");
+    debug.begin( _baudrate );   
     
-    //---you need to delete them
+    //---you maybe need to delete them when no wifi
     connectWiFi();
     errorhandler();
     //-------------//
@@ -144,7 +89,6 @@ void setup() {
     attachInterrupt(0,changetouch,CHANGE); //pin2
     attachInterrupt(1,changeangle,CHANGE); //pin3
 
-    //digitalWrite(_beeppin,HIGH);
     analogWrite(_clock,127);
 
     //sd card setup
@@ -165,10 +109,7 @@ void setup() {
   }**/
 }
 void loop() {
-    //test
-    //delay(1000);
-    //SentOnCloud(String(0),String(0),String(0),String(isactive),String(0),String(error));
-    Serial.println(digitalRead(_touchpin));         
+       
     isintr=0;
     tracetouch();    
     countstep();
@@ -183,7 +124,7 @@ void loop() {
     if(alarm==1)SentOnCloud(String(analogRead(_vibratepin)),String(angle),String(alarm),String(isactive),String(0),String(error & isintr));
     while(isintr==1){console("I'm in intr_4=>"+ String(isintr));isintr=0;Alarm();alarmreset();alarmbeep();if(alarm==1)SentOnCloud(String(analogRead(_vibratepin)),String(angle),String(alarm),String(isactive),String(0),String(error & isintr));}
     
-    //you need to delete it if don't need wifi---------
+    //you need to delete it if no wifi---------
     errorhandler();
     //    
 }
@@ -196,48 +137,6 @@ void connectWiFi()
 
 void SentOnCloud(String Vib,String Ang, String Alarm,String Isactive,String Step,String Error)
 {    
-    // 設定 ESP8266 作為 Client 端
-    /**
-    String cmd = "AT+CIPSTART=\"TCP\",\"";
-    cmd += IP;
-    cmd += "\",80";
-    console("SEND: ");
-    console(cmd);
-    debug.println(cmd);
-    if( debug.find( "Error" ) )
-    {
-        console( "RECEIVED: Error\nExit1" );
-        return;
-    }
-    cmd = GET + "&field1=" + Vib + "&field2=" + Ang+ "&field3=" + Alarm +"&field4="+ Isactive +"&field5="+ Step + "&field6=" + Error +"\r\n\r\n";
-    debug.print( "AT+CIPSEND=" );
-    debug.println(cmd.length());
-    if(debug.find( ">" ) )
-    {
-        console(">");
-        console(cmd);
-        debug.print(cmd);
-    }
-    else
-    {
-        debug.print( "AT+CIPCLOSE" );
-    }
-    if( debug.find("OK") )
-    {
-        console( "RECEIVED: OK" );
-    }
-    else
-    {
-        console( "RECEIVED: Error\nExit2" );
-        //resend the data
-        if(times<_max_recursion){
-          times++;
-          SentOnCloud(String(analogRead(_vibratepin)),String(angle),String(alarm),String(isactive),String(0),String(error & isintr));
-        }else{
-          connerror=1;
-          times=0;
-        }
-    }**/
     String cmd = "AT+CIPSTART=\"TCP\",\"";
     cmd += "icane.herokuapp.com";
     cmd += "\",80";
@@ -293,8 +192,6 @@ void Wifi_connect()
 boolean Connect_to_NTU(){
     
     String cmd="AT+CWJAP=\"";
-    
-    
     cmd+="NTU";
     cmd+="\",\"\"";
     console(cmd);
@@ -390,12 +287,7 @@ boolean post(String postRequest){
             else {
                 console("An error occured while sending packet when conn to NTU");
                 times=0; connerror=1; return false;
-            }
-            /**
-            connerror=0;
-            debug.println("AT+CIPCLOSE");
-            SentOnCloud(String(0),String(0),String(0),String(isactive),String(0),String(error));
-            return true;**/
+            }            
 }
 
 void Loding(String state){
