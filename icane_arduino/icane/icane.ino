@@ -13,8 +13,8 @@ const int duty=127; //(1ms)
 SoftwareSerial debug( _rxpin, _txpin ); // RX, TX
 //*-- IoT Information
 
-#define SSID "iPhone"
-#define PASS "0956016618"
+#define SSID "dlink"
+#define PASS "062015178"
 const String DEV_NAME = "icane01";
 const boolean connNTU = false;
 const boolean serial=true;

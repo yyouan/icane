@@ -692,13 +692,13 @@ function datareceiver(req,res){
                     "contents": [
                         {
                         "type": "text",
-                        "text": dev + " 故障訊息(連線／感測器)"
+                        "text": dev 
                         }
                     ]
                     },
                     "hero": {
                         "type": "image",
-                        "url": "https://lh3.googleusercontent.com/bfNUrAosz9mqGSl8xgVUnNf9GJSax_T9ByQZRmfudoiDyC2q86ZnX3Ia7qVdGqCYzbRdIDZThrE_10zhBM-ZUj4g5m_kyf7QzPZudpxusdXbxICwRv2ts24RGDYLx4ObeGhzqz-Y8rIxSar1xT2QJlb4hxAUvsPz7xfEXJlJpLuXP6u2XrG0akBPGfZQ9CJuuQ4yEpkjREISUwaL3tFRqtdJfShg5F_YeMkZTL5TWa5dtzDO5kligIBkSt7_92W1OdNamUl_AytykMFEhFJ_c3LmvxPDp21t0p1vhzMA3iHcQyuHgOD5N2BmmICVVeYqZX16OXAl1VHUrGXVfxCQ1709O9rI02EnR8CCzSrzEZzOW73kHbJgxNPtDDrNDA4J6icbDF1014zg0kFlfIRLPwSbuTslVMSfRbE9CM9XPEAcHswhk_o3-qX-uVklP3RYT27CQzINrhfS4jMU7jaVPN5t5xdBGkzFvDqvEJ_7dc3-RvEg8Z1x7TVNRqqtU1sXv6XfXP3d7lYATBqLApwWyMt1uaPtzwn7L2Mqyp6tRBHNaZ63Uc_aRNYbUG1eihJllCdl2CnPtYUi-jwPNDVBT39dE-ZsaPpma4q9RZSFzFoz-2prEatmFxTjMge2DbSEi_YHDY6WQyyxDD8qi_4SvrEhpOs=w393-h367-no", //use 圖片位址
+                        "url": "https://i.imgur.com/PGDhuIT.jpg", //use 圖片位址
                     },
                     "body": {
                       "type": "box",
@@ -706,7 +706,7 @@ function datareceiver(req,res){
                       "contents": [
                         {
                           "type": "text",
-                          "text": "請趕緊通話聯繫，確認狀況",
+                          "text": "故障訊息(連線／感測器)，請趕緊通話聯繫，確認狀況",
                         },
                         {
                             "type": "text",
@@ -721,7 +721,7 @@ function datareceiver(req,res){
             msg.contents.header.contents[0].text = "跌倒了!!->快聯繫:"+ email;
             msg.contents.hero = {
                 "type": "image",
-                "url": "https://lh3.googleusercontent.com/asSt1576xm1O1TJ3VhNIbOKRjRpX9-MvccKMdxZImhvMw5HgtVfaCe72aouni0r7_4JQZuQD7AK3tjI2GLjnnOVtYEuGrOuc1MUd36oMzT49SUFmGgpQ-XLA7b8HWlN6j7Jh9pfvx2lMRE2zUpegR--5-rmIf14CaH-fMuZutKJekhYwrNuYsH9GyavSlm9T26gkGqusqw3Ia9YRjKGaJ1vspp2MoFwg_23BAdkO89LM2kQDQ_QLW1uH6AtQl-aOrJdk01-oUPcTAuXADUuytvqE4MAjL0E1ptNkRUzbChVqNh6GDO0J0k_Qkmr8RaZ4cReblu26rEDPnj9FgMlVZn4uFAEtqmDpJ_Pu76gSkyc2CwWyLw1ZbFFi5-SkpI9dvZdhO2LENenzU6WJyVGFgk8LqhvYBDzJ-WcmRilaTj0SemoT1aO6-wMqFcp70V9JhWDSr_tsZcICUUNiZZKtkjJDJUKb5J6bcdIRugaEjitQ7dVR7pSHtgjDOrYtOXbkIN52JWXGSLebQ7UVJ6huWZtp8_B9qwynrKC215HVSYdfC55CnfguUcwOtZq8YTlTgFUZiX9nJ3PYcPh0OeN5U1vMhNnUGfNyS1am0pD-3LOORcNTW_bb8yNFB9yyRKZuX-ok1JQBnp1DQMRVTeKMMAebRCs=w316-h332-no",
+                "url": "https://i.imgur.com/zkmwlLW.jpg",
             }
         }
     
@@ -841,13 +841,13 @@ function betteryschedule(){
                                 "contents": [
                                     {
                                     "type": "text",
-                                    "text": client.dev_name+ " 故障訊息(連線／沒電)"
+                                    "text": client.dev_name
                                     }
                                 ]
                                 },
                                 "hero": {
                                     "type": "image",
-                                    "url": "https://lh3.googleusercontent.com/17C-0ZS4bWcaQkt_moNI_RrmD-UsijUKwWHwgpDWGtC2t2U-zXyIyerDf7CM2OKH1kWJ71ne0bs53UM5zHSu-Qdy6bYjUYoctDXEmLuqG0Nzd8aPGyQOa-PN8ctFPtDiAuA65BuxHu-SScrlVbLQQ4vvJwbsFOT2C-0NEi8P3NRMcMlT2C1-DcoH8ByfAUDMAcwoj_QlRYUMgFUGMSLY9it8vMNeoImh8sZtGNYcbDVBAOhoD7GKhbHlwY5fCKjo2-kV3MpyT2XUnZOfHDO0sVOo-W5Ue4Ov_S1DCqhDVn2v4qUQ5pkvHBuYKU3Ag5pJ84niMiNNJSxHUqBuZrRVWGRkQul2semp3hNka5YFS3MWakkBmJ1KyDG5O21iajDSeLSeQ6-LekszY-uFZjBz9nFsam5PwM5NAKueeJnKKmXkumX0lUzgFjyqEG481sWh9CAji2b_J0N_NfgIMJmx74AH7xpP2mrGP3mhdLJKraM0rh4a-Wvx8Ma_QMGHBiRUueMINFiqAy6SxYGs1uaNsnT_yj0pwi0YqFP2k33biXbXZWaIBmnvpXq4GFBs11lwp__44zlwkc53XcF7SNzfJp1DuQ_a7zzbFA=w393-h367-no", //use 圖片位址
+                                    "url": "https://i.imgur.com/PGDhuIT.jpg", //use 圖片位址
                                 },
                                 "body": {
                                   "type": "box",
@@ -855,7 +855,7 @@ function betteryschedule(){
                                   "contents": [
                                     {
                                       "type": "text",
-                                      "text": "請趕緊通話聯繫，確認狀況",
+                                      "text": "故障訊息(連線／沒電)，請趕緊通話聯繫，確認狀況",
                                     },
                                     {
                                         "type": "text",
