@@ -35,12 +35,12 @@ boolean is_sd = false;
 
 //--------------------parameter----------------
 const int _touchgate = 500; //(untouch less than _touchgate viewed as "touched") //(dealta h=1m)
-const int _vibrategate = 720;
+const int _vibrategate = 200;
 const int _noflipvibgate = 900;
 const bool _standingangle = 1; // (_ : 1 ; | : 0)
 const int _flipvibsensetime = 500;
 const int  _touchtimegate = 200;
-const int _angle_long_time = 1000; //(delta h=1cm)
+const int _angle_long_time = 2000; //(delta h=1cm)
 
 const int _stepHIGH = 30;
 int laststep_high = 1024;
@@ -48,7 +48,7 @@ const int _stepLOW = -20;
 const unsigned long _step_flushing_time = (1000 * 30 * 1);
 const int _steptime = 20;
 
-//const int _angle_fluct_time = 50; //(delta h=1cm)
+const int _angle_fluct_time = 50; //(delta h=1cm)
 
 const int _battery_call_period = 45000; //with conn error detecting
 const int _max_recursion = 1;
@@ -121,6 +121,8 @@ void loop() {
     isintr = 0;
     countstep();
     alarmreset();
+    alarmbeep();
+    if (alarm == 1)SentOnCloud(String(analogRead(_vibratepin)), String(angle), String(alarm), String(isactive), String(0), String(error & isintr));
   }
   betterycall();
   senseVibrate();
@@ -131,6 +133,8 @@ void loop() {
     isintr = 0;
     Alarm();
     alarmreset();
+    alarmbeep();
+    if (alarm == 1)SentOnCloud(String(analogRead(_vibratepin)), String(angle), String(alarm), String(isactive), String(0), String(error & isintr));
   }
   alarmbeep();
   while (isintr == 1) {
@@ -140,6 +144,7 @@ void loop() {
     alarmbeep();
     alarmreset();
     alarmbeep();
+    if (alarm == 1)SentOnCloud(String(analogRead(_vibratepin)), String(angle), String(alarm), String(isactive), String(0), String(error & isintr));
   }
   if (alarm == 1)SentOnCloud(String(analogRead(_vibratepin)), String(angle), String(alarm), String(isactive), String(0), String(error & isintr));
   while (isintr == 1) {
@@ -382,22 +387,22 @@ void changetouch() {
 }
 void changeangle() {
 
-   //lastangletime = millis();
 
-    if (digitalRead(_anglepin) == HIGH) {
-      angle = 1;
-    }
-    else angle = 0;
-
-    isintr = 1;
-    /**Alarm();
-      SentOnCloud(String(analogRead(_vibratepin)),String(angle),String(alarm),String(isactive),String(0),String(error));**/
-    console("I'm in changeangle:" + String(angle));
-
-  //if ((millis() - lastangletime) >= _angle_fluct_time) {
-
+  if ((millis() - lastangletime) >= _angle_fluct_time) {
     
-  //}
+      lastangletime = millis();
+
+      if (digitalRead(_anglepin) == HIGH) {
+        angle = 1;
+      }
+      else angle = 0;
+
+      isintr = 1;
+      /**Alarm();
+        SentOnCloud(String(analogRead(_vibratepin)),String(angle),String(alarm),String(isactive),String(0),String(error));**/
+      console("I'm in changeangle:" + String(angle));
+    
+  }
 }
 
 void tracetouch() {
@@ -508,11 +513,11 @@ void Alarm() {
     unsigned long init = millis();
     unsigned long debugcount = 0;
     maxvibrate = 0;
-    while ( (maxvibrate < _vibrategate) && ((millis() - init) < _flipvibsensetime) && (debugcount < pow (2, 50))) {
+    while ( (maxvibrate < (laststep_high + _vibrategate)) && ((millis() - init) < _flipvibsensetime) && (debugcount < pow (2, 50))) {
       senseVibrate();
       debugcount++;
     }
-    if (maxvibrate > _vibrategate) {
+    if (maxvibrate > (laststep_high + _vibrategate) ) {
       delay(_angle_long_time);
       if( (angle != _standingangle) ){
           console("!!!with flip!!!");
