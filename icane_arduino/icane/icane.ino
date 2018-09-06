@@ -44,12 +44,12 @@ const int _angle_long_time = 1000; //(delta h=1cm)
 
 const int _stepHIGH = 240;
 const int _stepLOW = 220;
-const unsigned long _step_flushing_time = (1000 * 60 * 1);
+const unsigned long _step_flushing_time = (1000 * 10 * 1);
 const int _steptime = 20;
 
 const int _angle_fluct_time = 50; //(delta h=1cm)
 
-const int _battery_call_period = 60000; //with conn error detecting
+const int _battery_call_period = 30000; //with conn error detecting
 const int _max_recursion = 1;
 const int _alarm_reset_button_time = 3000;
 
@@ -65,7 +65,7 @@ volatile bool angle = 0, alarm = 0, isactive = 0;
 volatile unsigned long lasttouchtime = 0;
 volatile unsigned long lastangletime = 0;
 volatile unsigned long lastbatterytime = 0;
-volatile unsigned long laststepcounttime = 0;
+volatile unsigned long laststepcounttime = millis();
 unsigned long lastvibcounttime = 0;
 volatile bool isintr = 0;
 int stepcount = 0;
@@ -438,6 +438,7 @@ void countstep() {
   if ((millis() - laststepcounttime) >= _step_flushing_time) {
     SentOnCloud(String(analogRead(_vibratepin)), String(angle), String(alarm), String(isactive), String(stepcount / 5), String(error & isintr));
     stepcount = 0;
+    laststepcounttime = millis();
   }
 }
 
