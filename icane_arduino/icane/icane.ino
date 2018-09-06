@@ -42,14 +42,15 @@ const int _flipvibsensetime = 500;
 const int  _touchtimegate = 200;
 const int _angle_long_time = 1000; //(delta h=1cm)
 
-const int _stepHIGH = 240;
-const int _stepLOW = 220;
-const unsigned long _step_flushing_time = (1000 * 10 * 1);
+const int _stepHIGH = 30;
+int laststep_high = 1024;
+const int _stepLOW = -20;
+const unsigned long _step_flushing_time = (1000 * 30 * 1);
 const int _steptime = 20;
 
 const int _angle_fluct_time = 50; //(delta h=1cm)
 
-const int _battery_call_period = 30000; //with conn error detecting
+const int _battery_call_period = 60000; //with conn error detecting
 const int _max_recursion = 1;
 const int _alarm_reset_button_time = 3000;
 
@@ -417,15 +418,16 @@ void countstep() {
   volatile bool lock = 0;
   unsigned long start = millis();
   unsigned long debugcount = 0;
+  volatile bool add = 0;
   do {
     int vibrate;
     vibrate = analogRead(_vibratepin);
     //console("I'm locked" +String(vibrate));
-    if (vibrate >= _stepHIGH) {
+    if (vibrate >= (_stepHIGH + laststep_high) ) {
       lock = 1;
     }
-    else if ( (lock == 1) && ( vibrate <= _stepLOW || (debugcount >= (pow(2, 30))))) {
-      stepcount++;
+    else if ( (lock == 1) && ( vibrate <= (laststep_high - _stepLOW) || (debugcount >= (pow(2, 30))))) {
+      add=1;
       lock = 0;
     }
     if ( (millis() - start) >= _steptime ) {
@@ -433,10 +435,13 @@ void countstep() {
     }
     debugcount++;
   } while (lock != 0);
-  console("------------Step:" + String(stepcount / 5));
 
-  if ((millis() - laststepcounttime) >= _step_flushing_time) {
-    SentOnCloud(String(analogRead(_vibratepin)), String(angle), String(alarm), String(isactive), String(stepcount / 5), String(error & isintr));
+  if(add == 1)stepcount++;
+  console("------------Step:" + String(stepcount));
+  
+  if ((millis() - laststepcounttime) >= _step_flushing_time && stepcount!=0 ) {
+    SentOnCloud(String(analogRead(_vibratepin)), String(angle), String(alarm), String(isactive), String(stepcount), String(error & isintr));
+    console("Sendstep");
     stepcount = 0;
     laststepcounttime = millis();
   }
@@ -449,6 +454,7 @@ void senseVibrate() {
     maxvibrate = vib;
     lastvibcounttime = millis();
   }
+  if(vib < (laststep_high + _stepHIGH) || vib > (laststep_high - _stepLOW) )laststep_high = vib;
   if ( (millis() - lastvibcounttime) > _flipvibsensetime )maxvibrate = 0;
 }
 
