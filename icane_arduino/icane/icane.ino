@@ -37,7 +37,7 @@ boolean is_sd = false;
 const int _touchgate = 500; //(untouch less than _touchgate viewed as "touched") //(dealta h=1m)
 const int _vibrategate = 720;
 const int _noflipvibgate = 900;
-const bool _standingangle = 0; // (_ : 1 ; | : 0)
+const bool _standingangle = 1; // (_ : 1 ; | : 0)
 const int _flipvibsensetime = 500;
 const int  _touchtimegate = 200;
 const int _angle_long_time = 1000; //(delta h=1cm)
@@ -48,9 +48,9 @@ const int _stepLOW = -20;
 const unsigned long _step_flushing_time = (1000 * 30 * 1);
 const int _steptime = 20;
 
-const int _angle_fluct_time = 50; //(delta h=1cm)
+//const int _angle_fluct_time = 50; //(delta h=1cm)
 
-const int _battery_call_period = 60000; //with conn error detecting
+const int _battery_call_period = 45000; //with conn error detecting
 const int _max_recursion = 1;
 const int _alarm_reset_button_time = 3000;
 
@@ -115,6 +115,7 @@ void loop() {
   isintr = 0;
   tracetouch();
   countstep();
+  changeangle();
   while (isintr == 1) {
     console("I'm in intr_1=>" + String(isintr));
     isintr = 0;
@@ -381,9 +382,7 @@ void changetouch() {
 }
 void changeangle() {
 
-  if ((millis() - lastangletime) >= _angle_fluct_time) {
-
-    lastangletime = millis();
+   //lastangletime = millis();
 
     if (digitalRead(_anglepin) == HIGH) {
       angle = 1;
@@ -394,7 +393,11 @@ void changeangle() {
     /**Alarm();
       SentOnCloud(String(analogRead(_vibratepin)),String(angle),String(alarm),String(isactive),String(0),String(error));**/
     console("I'm in changeangle:" + String(angle));
-  }
+
+  //if ((millis() - lastangletime) >= _angle_fluct_time) {
+
+    
+  //}
 }
 
 void tracetouch() {
@@ -475,6 +478,8 @@ void beepon() {
   delay(2000);
   attachInterrupt(0, changetouch, CHANGE); //pin2
   attachInterrupt(1, changeangle, CHANGE); //pin3
+  changetouch();
+  changeangle();
 }
 void beepoff() {
   //digitalWrite(_beeppin,LOW);
@@ -559,6 +564,8 @@ void alarmreset() {
     delay(300);
     attachInterrupt(0, changetouch, CHANGE); //pin2
     attachInterrupt(1, changeangle, CHANGE); //pin3**/
+    changetouch();
+    changeangle();
   }
 }
 

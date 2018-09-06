@@ -665,7 +665,7 @@ function datareceiver(req,res){
                     },
                     {
                       "type": "text",
-                      "text": "角度狀態： "+ ((data.ang=='0')?"|| Standing ||":"= Lying ="),
+                      "text": "角度狀態： "+ ((data.ang=='1')?"|| Standing ||":"= Lying ="),
                     },                
                     {
                         "type": "text",
