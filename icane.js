@@ -779,11 +779,11 @@ var server = app.listen((process.env.PORT || 8080), function() {
 //--------------always on----------------------------
 betteryschedule();
 function betteryschedule(){
-    schedule.scheduleJob('15 * * * *',scanAccount);
-    schedule.scheduleJob('30 * * * *',scanAccount);
-    schedule.scheduleJob('45 * * * *',scanAccount);
-    schedule.scheduleJob('00 * * * *',scanAccount);
-    schedule.scheduleJob('00 * * * * *',scanAccount);//test
+    schedule.scheduleJob('00 15 * * *',scanAccount);
+    schedule.scheduleJob('00 30 * * *',scanAccount);
+    schedule.scheduleJob('00 45 * * *',scanAccount);
+    schedule.scheduleJob('00 00 * * *',scanAccount);
+    //schedule.scheduleJob('00 * * * * *',scanAccount);//test
     
     function scanAccount(){
         var date = new Date();

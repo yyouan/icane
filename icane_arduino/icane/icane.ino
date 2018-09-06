@@ -8,7 +8,7 @@
 #define _anglepin 3
 #define _beeppin 7
 #define _clock 9 //(500HZ)
-const int duty=127; //(1ms)
+const int duty = 127; //(1ms)
 #define _vibratepin 0 //A0
 SoftwareSerial debug( _rxpin, _txpin ); // RX, TX
 //*-- IoT Information
@@ -17,513 +17,594 @@ SoftwareSerial debug( _rxpin, _txpin ); // RX, TX
 #define PASS "062015178"
 const String DEV_NAME = "icane01";
 const boolean connNTU = false;
-const boolean serial=true;
+const boolean serial = true;
 boolean is_sd = false;
 //------------sd card para-------------------
 /**File myFile;
 
-// 設定 SD library 功能變數:
+  // 設定 SD library 功能變數:
 
-Sd2Card card;
-SdVolume volume;
-SdFile root;
+  Sd2Card card;
+  SdVolume volume;
+  SdFile root;
 
-const int chipSelect = 8;
-const int sd_pin = 8;
-const int sd_pow_pin = 7;
+  const int chipSelect = 8;
+  const int sd_pin = 8;
+  const int sd_pow_pin = 7;
 **/
 
 //--------------------parameter----------------
-const int _touchgate=500; //(untouch less than _touchgate viewed as "touched") //(dealta h=1m)
-const int _vibrategate=800;
-const int _noflipvibgate=1000;
-const bool _standingangle=0; // (_ : 1 ; | : 0)
-const int _flipvibsensetime=1000;
-const int  _touchtimegate=200;
+const int _touchgate = 500; //(untouch less than _touchgate viewed as "touched") //(dealta h=1m)
+const int _vibrategate = 720;
+const int _noflipvibgate = 900;
+const bool _standingangle = 0; // (_ : 1 ; | : 0)
+const int _flipvibsensetime = 500;
+const int  _touchtimegate = 200;
+const int _angle_long_time = 1000; //(delta h=1cm)
 
-const int _stepHIGH=600;
-const int _stepLOW=580;
-const int _step_flushing_time=(1000*60*1);
-const int _steptime = 100;
+const int _stepHIGH = 240;
+const int _stepLOW = 220;
+const unsigned long _step_flushing_time = (1000 * 60 * 1);
+const int _steptime = 20;
 
-const int _angle_fluct_time=50; //(delta h=1cm)
+const int _angle_fluct_time = 50; //(delta h=1cm)
 
-const int _battery_call_period=30000; //with conn error detecting
-const int _max_recursion=1;
-const int _alarm_reset_button_time=3000;
+const int _battery_call_period = 60000; //with conn error detecting
+const int _max_recursion = 1;
+const int _alarm_reset_button_time = 3000;
 
-const int _alarm_reset_button_on=HIGH;
-const int _touched=HIGH;
+const int _alarm_reset_button_on = HIGH;
+const int _touched = HIGH;
 
-const int _buffertime=20;//second
-const int _max_data_inpackage=1000; 
+const int _buffertime = 20; //second
+const int _max_data_inpackage = 1000;
 //---------------------------------------------
 
-volatile bool istouch=0;
-volatile bool angle=0,alarm=0,isactive=0;
-volatile unsigned long lasttouchtime=0;
-volatile unsigned long lastangletime=0;
-volatile unsigned long lastbatterytime=0;
-volatile unsigned long laststepcounttime=0;
-unsigned long lastvibcounttime=0;
-volatile bool isintr=0;
-int stepcount=0;
-bool error=0;
-bool connerror=0;
-int times=0;
-int maxvibrate=0;
+volatile bool istouch = 0;
+volatile bool angle = 0, alarm = 0, isactive = 0;
+volatile unsigned long lasttouchtime = 0;
+volatile unsigned long lastangletime = 0;
+volatile unsigned long lastbatterytime = 0;
+volatile unsigned long laststepcounttime = 0;
+unsigned long lastvibcounttime = 0;
+volatile bool isintr = 0;
+int stepcount = 0;
+bool error = 0;
+bool connerror = 0;
+int times = 0;
+int maxvibrate = 0;
 
-void setup() {      
-    Serial.begin( _baudrate );
-    debug.begin( _baudrate );   
-    
-    //---you maybe need to delete them when no wifi
-    connectWiFi();
-    errorhandler();
-    //-------------//
-            
-    pinMode(_touchpin,INPUT);
-    pinMode(_anglepin,INPUT);
-    pinMode(_beeppin,OUTPUT);
-    pinMode(_clock,OUTPUT);
-    attachInterrupt(0,changetouch,CHANGE); //pin2
-    attachInterrupt(1,changeangle,CHANGE); //pin3
+void setup() {
+  Serial.begin( _baudrate );
+  debug.begin( _baudrate );
 
-    analogWrite(_clock,127);
+  //---you maybe need to delete them when no wifi
+  connectWiFi();
+  errorhandler();
+  //-------------//
 
-    //sd card setup
-    /**pinMode(sd_pow_pin,OUTPUT);
+  pinMode(_touchpin, INPUT);
+  pinMode(_anglepin, INPUT);
+  pinMode(_beeppin, OUTPUT);
+  pinMode(_clock, OUTPUT);
+  attachInterrupt(0, changetouch, CHANGE); //pin2
+  attachInterrupt(1, changeangle, CHANGE); //pin3
+
+  analogWrite(_clock, 127);
+
+  //sd card setup
+  /**pinMode(sd_pow_pin,OUTPUT);
     digitalWrite(sd_pow_pin,HIGH);
-    
+
     Serial.println("\nWaiting for SD card ready...");
     while (true) {
-      if(SD.begin(sd_pin)){
-      is_sd = true;            
-      console("--------------------------------------");
-      console("SD_start!");
-      break;
-      }
-      else{
-        continue;
-      }   
-  }**/
+    if(SD.begin(sd_pin)){
+    is_sd = true;
+    console("--------------------------------------");
+    console("SD_start!");
+    break;
+    }
+    else{
+      continue;
+    }
+    }**/
 }
 void loop() {
-       
-    isintr=0;
-    tracetouch();    
+
+  isintr = 0;
+  tracetouch();
+  countstep();
+  while (isintr == 1) {
+    console("I'm in intr_1=>" + String(isintr));
+    isintr = 0;
     countstep();
-    while(isintr==1){console("I'm in intr_1=>"+ String(isintr));isintr=0;countstep();alarmreset();}
-    betterycall();
-    senseVibrate();
+    alarmreset();
+  }
+  betterycall();
+  senseVibrate();
+  Alarm();
+  alarmreset();
+  while (isintr == 1) {
+    console("I'm in intr_2 =>" + String(isintr));
+    isintr = 0;
     Alarm();
     alarmreset();
-    while(isintr==1){console("I'm in intr_2 =>"+ String(isintr));isintr=0;Alarm();alarmreset();}
+  }
+  alarmbeep();
+  while (isintr == 1) {
+    console("I'm in intr_3=>" + String(isintr));
+    isintr = 0;
+    Alarm();
     alarmbeep();
-    while(isintr==1){console("I'm in intr_3=>"+ String(isintr));isintr=0;Alarm();alarmbeep();alarmreset();alarmbeep();}
-    if(alarm==1)SentOnCloud(String(analogRead(_vibratepin)),String(angle),String(alarm),String(isactive),String(0),String(error & isintr));
-    while(isintr==1){console("I'm in intr_4=>"+ String(isintr));isintr=0;Alarm();alarmreset();alarmbeep();if(alarm==1)SentOnCloud(String(analogRead(_vibratepin)),String(angle),String(alarm),String(isactive),String(0),String(error & isintr));}
-    
-    //you need to delete it if no wifi---------
-    errorhandler();
-    //    
+    alarmreset();
+    alarmbeep();
+  }
+  if (alarm == 1)SentOnCloud(String(analogRead(_vibratepin)), String(angle), String(alarm), String(isactive), String(0), String(error & isintr));
+  while (isintr == 1) {
+    console("I'm in intr_4=>" + String(isintr));
+    isintr = 0;
+    Alarm();
+    alarmreset();
+    alarmbeep();
+    if (alarm == 1)SentOnCloud(String(analogRead(_vibratepin)), String(angle), String(alarm), String(isactive), String(0), String(error & isintr));
+  }
+
+  //you need to delete it if no wifi---------
+  errorhandler();
+  //
 }
 void connectWiFi()
 {
-    debug.println("AT+CWMODE=1");
-    if(connNTU==true){if(!Connect_to_NTU()){console("Something went wrong conn to NTU");}}
-    else Wifi_connect();
+  debug.println("AT+CWMODE=1");
+  if (connNTU == true) {
+    if (!Connect_to_NTU()) {
+      console("Something went wrong conn to NTU");
+    }
+  }
+  else Wifi_connect();
 }
 
-void SentOnCloud(String Vib,String Ang, String Alarm,String Isactive,String Step,String Error)
-{    
-    String cmd = "AT+CIPSTART=\"TCP\",\"";
-    cmd += "icane.herokuapp.com";
-    cmd += "\",80";
-    console("SEND: ");
+void SentOnCloud(String Vib, String Ang, String Alarm, String Isactive, String Step, String Error)
+{
+  String cmd = "AT+CIPSTART=\"TCP\",\"";
+  cmd += "icane.herokuapp.com";
+  cmd += "\",80";
+  console("SEND: ");
+  console(cmd);
+  debug.println(cmd);
+  if ( debug.find( "Error" ) )
+  {
+    console( "RECEIVED: Error\nExit1" );
+    return;
+  }
+  cmd = "GET /data?dev_name=" + DEV_NAME + "&vib=" + Vib + "&ang=" + Ang + "&alarm=" + Alarm + "&isactive=" + Isactive + "&step=" + Step + "&error=" + Error + " HTTP/1.0\r\nHost: icane.herokuapp.com\r\n\r\n";
+  debug.print( "AT+CIPSEND=" );
+  debug.println(cmd.length());
+  if (debug.find( ">" ) )
+  {
+    console(">");
     console(cmd);
-    debug.println(cmd);
-    if( debug.find( "Error" ) )
-    {
-        console( "RECEIVED: Error\nExit1" );
-        return;
+    debug.print(cmd);
+  }
+  else
+  {
+    debug.print( "AT+CIPCLOSE" );
+  }
+  if ( debug.find("OK") )
+  {
+    console( "RECEIVED: OK" );
+  }
+  else
+  {
+    console( "RECEIVED: Error\nExit2" );
+    //resend the data
+    if (times < _max_recursion) {
+      times++;
+      SentOnCloud(String(analogRead(_vibratepin)), String(angle), String(alarm), String(isactive), String(0), String(error & isintr));
+    } else {
+      connerror = 1;
+      times = 0;
     }
-    cmd = "GET /data?dev_name="+ DEV_NAME + "&vib=" + Vib + "&ang=" + Ang+ "&alarm=" + Alarm +"&isactive="+ Isactive +"&step="+ Step + "&error=" + Error +" HTTP/1.0\r\nHost: icane.herokuapp.com\r\n\r\n";
-    debug.print( "AT+CIPSEND=" );
-    debug.println(cmd.length());
-    if(debug.find( ">" ) )
-    {
-        console(">");
-        console(cmd);
-        debug.print(cmd);
-    }
-    else
-    {
-        debug.print( "AT+CIPCLOSE" );
-    }
-    if( debug.find("OK") )
-    {
-        console( "RECEIVED: OK" );
-    }
-    else
-    {
-        console( "RECEIVED: Error\nExit2" );
-        //resend the data
-        if(times<_max_recursion){
-          times++;
-          SentOnCloud(String(analogRead(_vibratepin)),String(angle),String(alarm),String(isactive),String(0),String(error & isintr));
-        }else{
-          connerror=1;
-          times=0;
-        }
-    }
+  }
 }
 void Wifi_connect()
 {
-    String cmd="AT+CWJAP=\"";
-    cmd+=SSID;
-    cmd+="\",\"";
-    cmd+=PASS;
-    cmd+="\"";
-    sendDebug(cmd);
-    Loding("Wifi_connect");
+  String cmd = "AT+CWJAP=\"";
+  cmd += SSID;
+  cmd += "\",\"";
+  cmd += PASS;
+  cmd += "\"";
+  sendDebug(cmd);
+  Loding("Wifi_connect");
 }
 
-boolean Connect_to_NTU(){
-    
-    String cmd="AT+CWJAP=\"";
-    cmd+="NTU";
-    cmd+="\",\"\"";
-    console(cmd);
-    debug.println(cmd);
-    Loding("Wifi_connect");
+boolean Connect_to_NTU() {
 
-    if(NTUtcpconn()==true)return true;
-    else return false;     
-   
+  String cmd = "AT+CWJAP=\"";
+  cmd += "NTU";
+  cmd += "\",\"\"";
+  console(cmd);
+  debug.println(cmd);
+  Loding("Wifi_connect");
+
+  if (NTUtcpconn() == true)return true;
+  else return false;
+
 }
 
-boolean NTUtcpconn(){
-   String server="wl122.cc.ntu.edu.tw";
-   String URI="/auth/loginnw.html";
-   String port="80";
-   String data="username=B05202030&password=Ceiba0084";
-   // initiate TCP connection
-    String tcpStart = "AT+CIPSTART=\"TCP\",\"" + server + "\"," + port;
-    
-    // prepare the data to be posted
-    String postRequest =
-        "POST " + URI + " HTTP/1.1\r\n" +
-        "Host: " + server + ":" + port + "\r\n" +
-        "Accept: *" + "/" + "*\r\n" +
-        "Content-Length: " + String(data.length()) + "\r\n" +
-        "Content-Type: application/x-www-form-urlencoded\r\n" +
-        "\r\n" +
-        data;
+boolean NTUtcpconn() {
+  String server = "wl122.cc.ntu.edu.tw";
+  String URI = "/auth/loginnw.html";
+  String port = "80";
+  String data = "username=B05202030&password=Ceiba0084";
+  // initiate TCP connection
+  String tcpStart = "AT+CIPSTART=\"TCP\",\"" + server + "\"," + port;
 
-    // notify ESP8266 about the lenght of TCP packet
-    String sendCmd = "AT+CIPSEND=" + String(postRequest.length());
+  // prepare the data to be posted
+  String postRequest =
+    "POST " + URI + " HTTP/1.1\r\n" +
+    "Host: " + server + ":" + port + "\r\n" +
+    "Accept: *" + "/" + "*\r\n" +
+    "Content-Length: " + String(data.length()) + "\r\n" +
+    "Content-Type: application/x-www-form-urlencoded\r\n" +
+    "\r\n" +
+    data;
 
-    debug.println(tcpStart);
-    console(tcpStart);
-    if (debug.find("OK")) {
-        console("NTU_TCP connection OK");
-        if(sendingCmd(sendCmd,postRequest)==true){connerror=0;return true;}
-        else {
-          console("Cannot initiate TCP connection when conn to NTU");
-          times++;
-          if(times<_max_recursion)NTUtcpconn();
-          else {times=0; connerror=1; return false;}
-        }        
+  // notify ESP8266 about the lenght of TCP packet
+  String sendCmd = "AT+CIPSEND=" + String(postRequest.length());
+
+  debug.println(tcpStart);
+  console(tcpStart);
+  if (debug.find("OK")) {
+    console("NTU_TCP connection OK");
+    if (sendingCmd(sendCmd, postRequest) == true) {
+      connerror = 0;
+      return true;
     }
     else {
-        console("Cannot initiate TCP connection when conn to NTU");
-        times++;
-        if(times<_max_recursion)NTUtcpconn();
-        else {times=0; connerror=1; return false;}
+      console("Cannot initiate TCP connection when conn to NTU");
+      times++;
+      if (times < _max_recursion)NTUtcpconn();
+      else {
+        times = 0;
+        connerror = 1;
+        return false;
+      }
     }
+  }
+  else {
+    console("Cannot initiate TCP connection when conn to NTU");
+    times++;
+    if (times < _max_recursion)NTUtcpconn();
+    else {
+      times = 0;
+      connerror = 1;
+      return false;
+    }
+  }
 }
-int _2times=0;
-int _3times=0;
-boolean sendingCmd(String sendCmd,String postRequest){
+int _2times = 0;
+int _3times = 0;
+boolean sendingCmd(String sendCmd, String postRequest) {
   debug.println(sendCmd);
   console(sendCmd);
-        while(!debug.find(">") && (_3times<(_max_recursion))){_3times++; debug.println(postRequest+"\r\n");console("Wait");}                        
-   
-        if(_3times<(_max_recursion)) {
-            _3times=0;
-            if(post(postRequest)==true){connerror=0;return true;}
-            else {
-               console("ESP8266 is not listening for incoming data when conn to NTU");
-                _2times++;
-                if(_2times<_max_recursion)sendingCmd(sendCmd,postRequest); 
-                else {_2times=0; connerror=1; return false;}
-            }
-        }
-        else {
-            _3times=0;
-            console("ESP8266 is not listening for incoming data when conn to NTU");
-            connerror=1; return false;
-        }
-}
+  while (!debug.find(">") && (_3times < (_max_recursion))) {
+    _3times++;
+    debug.println(postRequest + "\r\n");
+    console("Wait");
+  }
 
-boolean post(String postRequest){
-  console("Sending packet...");
-            debug.println(postRequest+"\r\n");
-            while(!debug.find("SEND OK") && (times<(_max_recursion))){times++; debug.println(postRequest+"\r\n");console("Wait");}
-  
-            if(times<(_max_recursion)) {
-                console("Packet sent");
-                while (debug.available()) {
-                    String tmpResp = debug.readString();
-                    console(tmpResp);
-                }
-                // close the connection
-                debug.println("AT+CIPCLOSE");
-                connerror=0;
-                SentOnCloud(String(0),String(0),String(0),String(isactive),String(0),String(error)); //test
-                return true;
-            }
-            else {
-                console("An error occured while sending packet when conn to NTU");
-                times=0; connerror=1; return false;
-            }            
-}
-
-void Loding(String state){
-    for (int timeout=0 ; timeout<10 ; timeout++)
-    {
-      if(debug.find("OK"))
-      {
-          console("RECEIVED: OK");
-          break;
-      }
-      else if(timeout==9){
-        console( state );
-        console(" fail...\nExit2");
-      }
-      else
-      {
-        console("Wifi Loading...");
-        delay(500);
+  if (_3times < (_max_recursion)) {
+    _3times = 0;
+    if (post(postRequest) == true) {
+      connerror = 0;
+      return true;
+    }
+    else {
+      console("ESP8266 is not listening for incoming data when conn to NTU");
+      _2times++;
+      if (_2times < _max_recursion)sendingCmd(sendCmd, postRequest);
+      else {
+        _2times = 0;
+        connerror = 1;
+        return false;
       }
     }
+  }
+  else {
+    _3times = 0;
+    console("ESP8266 is not listening for incoming data when conn to NTU");
+    connerror = 1; return false;
+  }
+}
+
+boolean post(String postRequest) {
+  console("Sending packet...");
+  debug.println(postRequest + "\r\n");
+  while (!debug.find("SEND OK") && (times < (_max_recursion))) {
+    times++;
+    debug.println(postRequest + "\r\n");
+    console("Wait");
+  }
+
+  if (times < (_max_recursion)) {
+    console("Packet sent");
+    while (debug.available()) {
+      String tmpResp = debug.readString();
+      console(tmpResp);
+    }
+    // close the connection
+    debug.println("AT+CIPCLOSE");
+    connerror = 0;
+    SentOnCloud(String(0), String(0), String(0), String(isactive), String(0), String(error)); //test
+    return true;
+  }
+  else {
+    console("An error occured while sending packet when conn to NTU");
+    times = 0; connerror = 1; return false;
+  }
+}
+
+void Loding(String state) {
+  for (int timeout = 0 ; timeout < 10 ; timeout++)
+  {
+    if (debug.find("OK"))
+    {
+      console("RECEIVED: OK");
+      break;
+    }
+    else if (timeout == 9) {
+      console( state );
+      console(" fail...\nExit2");
+    }
+    else
+    {
+      console("Wifi Loading...");
+      delay(500);
+    }
+  }
 }
 void sendDebug(String cmd)
 {
-    console("SEND: ");
-    console(cmd);
-    debug.print(cmd+"\r\n\r\n");
+  console("SEND: ");
+  console(cmd);
+  debug.print(cmd + "\r\n\r\n");
 }
-void changetouch(){
-  if( (millis()-lasttouchtime) > _touchtimegate){
-    Serial.println("I'm in changetouch");    
-    lasttouchtime=millis();
-    isintr=1;  
-    tracetouch(); 
-  } 
+void changetouch() {
+  if ( (millis() - lasttouchtime) > _touchtimegate) {
+    Serial.println("I'm in changetouch");
+    lasttouchtime = millis();
+    isintr = 1;
+    tracetouch();
+  }
 }
-void changeangle(){
-   
-  if((millis()-lastangletime)>=_angle_fluct_time){
-    
-    lastangletime=millis();
-    
-    if(digitalRead(_anglepin)==HIGH){angle=1;}
-    else angle=0;
+void changeangle() {
 
-    isintr=1;
+  if ((millis() - lastangletime) >= _angle_fluct_time) {
+
+    lastangletime = millis();
+
+    if (digitalRead(_anglepin) == HIGH) {
+      angle = 1;
+    }
+    else angle = 0;
+
+    isintr = 1;
     /**Alarm();
-    SentOnCloud(String(analogRead(_vibratepin)),String(angle),String(alarm),String(isactive),String(0),String(error));**/
-    console("I'm in changeangle:"+String(angle));
-  } 
+      SentOnCloud(String(analogRead(_vibratepin)),String(angle),String(alarm),String(isactive),String(0),String(error));**/
+    console("I'm in changeangle:" + String(angle));
+  }
 }
 
-void tracetouch(){
-  Serial.println("I'm in tracetouch");   
-  if( (digitalRead(_touchpin)==_touched) || (millis()-lasttouchtime) <= _touchgate ){
-    isactive=1;
-  }else{
-    isactive=0;
+void tracetouch() {
+  Serial.println("I'm in tracetouch");
+  if ( (digitalRead(_touchpin) == _touched) ) {
+    isactive = 1;
+  } else if( (millis() - lasttouchtime) <= _touchgate ){  
+  } else {
+    isactive = 0;
   }
   Serial.println("(touch)");
   Serial.println((digitalRead(_touchpin)));
   console("(isactive)");
   console(isactive);
   console("(angle)");
-  console(angle);  
+  console(angle);
 }
 
-void countstep(){
+void countstep() {
   console("I'm in countstep");
-  volatile bool lock=0;
+  volatile bool lock = 0;
   unsigned long start = millis();
-  unsigned long debugcount =0;
-  do{    
+  unsigned long debugcount = 0;
+  do {
     int vibrate;
-    vibrate=analogRead(_vibratepin);
+    vibrate = analogRead(_vibratepin);
     //console("I'm locked" +String(vibrate));
-    if(vibrate>=_stepHIGH){lock=1;}
-    else if( (lock==1) && ( vibrate<=_stepLOW || (debugcount >= (pow(2,30))))){stepcount++;lock=0;}
-    if( (millis() - start) >= _steptime ) {lock=0;}
+    if (vibrate >= _stepHIGH) {
+      lock = 1;
+    }
+    else if ( (lock == 1) && ( vibrate <= _stepLOW || (debugcount >= (pow(2, 30))))) {
+      stepcount++;
+      lock = 0;
+    }
+    if ( (millis() - start) >= _steptime ) {
+      lock = 0;
+    }
     debugcount++;
-  }while(lock!=0);
-  console("------------Step:"+String(stepcount/5));
-    
-  if((millis()-laststepcounttime)>=_step_flushing_time){
-    SentOnCloud(String(analogRead(_vibratepin)),String(angle),String(alarm),String(isactive),String(stepcount/5),String(error & isintr));
-    stepcount=0;
-   }
-}
+  } while (lock != 0);
+  console("------------Step:" + String(stepcount / 5));
 
-void senseVibrate(){
-  //console("I'm in senceVibrate");  
-  int vib=analogRead(_vibratepin);  
-  if(vib>maxvibrate){maxvibrate=vib;lastvibcounttime=millis();}
-  if( (millis()-lastvibcounttime) > _flipvibsensetime )maxvibrate=0;
-}
-
-void betterycall(){
-  console("I'm in betterycall");
-  if((millis()-lastbatterytime)>=_battery_call_period){
-    SentOnCloud(String(analogRead(_vibratepin)),String(angle),String(alarm),String(isactive),String(0),String(error & isintr));
-    lastbatterytime=millis();
+  if ((millis() - laststepcounttime) >= _step_flushing_time) {
+    SentOnCloud(String(analogRead(_vibratepin)), String(angle), String(alarm), String(isactive), String(stepcount / 5), String(error & isintr));
+    stepcount = 0;
   }
 }
 
-void beepon(){
+void senseVibrate() {
+  //console("I'm in senceVibrate");
+  int vib = analogRead(_vibratepin);
+  if (vib > maxvibrate) {
+    maxvibrate = vib;
+    lastvibcounttime = millis();
+  }
+  if ( (millis() - lastvibcounttime) > _flipvibsensetime )maxvibrate = 0;
+}
+
+void betterycall() {
+  console("I'm in betterycall");
+  if ((millis() - lastbatterytime) >= _battery_call_period) {
+    SentOnCloud(String(analogRead(_vibratepin)), String(angle), String(alarm), String(isactive), String(0), String(error & isintr));
+    lastbatterytime = millis();
+  }
+}
+
+void beepon() {
   detachInterrupt(0);
   detachInterrupt(1);
-  digitalWrite(_beeppin,HIGH);
+  digitalWrite(_beeppin, HIGH);
   delay(2000);
-  digitalWrite(_beeppin,LOW);
+  digitalWrite(_beeppin, LOW);
   delay(2000);
-  attachInterrupt(0,changetouch,CHANGE); //pin2
-  attachInterrupt(1,changeangle,CHANGE); //pin3  
+  attachInterrupt(0, changetouch, CHANGE); //pin2
+  attachInterrupt(1, changeangle, CHANGE); //pin3
 }
-void beepoff(){
+void beepoff() {
   //digitalWrite(_beeppin,LOW);
   //delay(500);
 }
-void alarmbeep(){
-  console("I'm in alarmbeep!"+String(alarm));
-  if(alarm==1){    
+void alarmbeep() {
+  console("I'm in alarmbeep!" + String(alarm));
+  if (alarm == 1) {
     beepon();
   }
 }
 
-void Alarm(){
+void Alarm() {
   //delay(1000);
   console("I'm in Alarm");
-  console("(Alarm)" + String(alarm));  
-  if( (maxvibrate>_noflipvibgate) && (isactive==1) ){
-    alarm=1;
+  console("(Alarm)" + String(alarm));
+  if ( (maxvibrate > _noflipvibgate) && (isactive == 1) ) {
+    alarm = 1;
     //attachInterrupt(0,changetouch,CHANGE); //pin2
-    maxvibrate=0;
-  }else if((angle!=_standingangle) && (isactive==1) )
+    console("!!!no flip!!!");
+    console("!!!no flip!!!");
+    console("!!!no flip!!!");
+    maxvibrate = 0;
+  } else if ((angle != _standingangle) && (isactive == 1) )
   {
-    unsigned long init=millis();
-    unsigned long debugcount =0;
-    maxvibrate=0;
-    while( (maxvibrate<_vibrategate) && ((millis()-init)<_flipvibsensetime) && (debugcount < pow (2,50))){senseVibrate();debugcount++;}
-    if(maxvibrate>_vibrategate){
-      alarm=1;
-      //attachInterrupt(0,changetouch,CHANGE); //pin2
-      maxvibrate=0;
+    unsigned long init = millis();
+    unsigned long debugcount = 0;
+    maxvibrate = 0;
+    while ( (maxvibrate < _vibrategate) && ((millis() - init) < _flipvibsensetime) && (debugcount < pow (2, 50))) {
+      senseVibrate();
+      debugcount++;
+    }
+    if (maxvibrate > _vibrategate) {
+      delay(_angle_long_time);
+      if( (angle != _standingangle) ){
+          console("!!!with flip!!!");
+          console("!!!with flip!!!");
+          console("!!!with flip!!!");
+           alarm = 1;
+          //attachInterrupt(0,changetouch,CHANGE); //pin2
+          maxvibrate = 0;
+      }      
     }
   }
   //if(alarm==1){
   console("(MaxVib)" + String(maxvibrate));
-  console("(Angle)" + String(angle)); 
+  console("(Angle)" + String(angle));
   console("(Alarm)" + String(alarm));
-  //} 
+  //}
 }
-volatile unsigned long pwm_value=0; 
-volatile unsigned long prev_time=0;
-void alarmreset(){
-   console("I'm in reset");
-   console(String(alarm));
-  if(alarm==1){      
-      detachInterrupt(0);
-      detachInterrupt(1);
-      console("debounce on!");
-      delay(500);
-      console("debounce off!");
-      pwm_value = 0;      
+volatile unsigned long pwm_value = 0;
+volatile unsigned long prev_time = 0;
+void alarmreset() {
+  console("I'm in reset");
+  console(String(alarm));
+  if (alarm == 1) {
+    detachInterrupt(0);
+    detachInterrupt(1);
+    console("debounce on!");
+    delay(500);
+    console("debounce off!");
+    pwm_value = 0;
+    attachInterrupt(0, rising, RISING);
+    delay(10); //wait for measurement
+    detachInterrupt(0);
+    console("the pwm time is" + String(pwm_value));
+    if ( ( pwm_value >= (1000 * 0.5) ) && ( pwm_value <= (1000 * 2) ) ) {
+
+      console("delay on!");
+      delay(_alarm_reset_button_time);
+      console("delay off!");
+      pwm_value = 0;
       attachInterrupt(0, rising, RISING);
       delay(10); //wait for measurement
       detachInterrupt(0);
-      console("the pwm time is"+String(pwm_value));      
-      if( ( pwm_value >= (1000*0.5) ) && ( pwm_value <= (1000*2) ) ){
-          
-          console("delay on!");
-          delay(_alarm_reset_button_time);
-          console("delay off!");
-          pwm_value = 0;
-          attachInterrupt(0, rising, RISING);
-          delay(10); //wait for measurement
-          detachInterrupt(0);          
-          if( ( pwm_value >= (1000*0.5) ) && ( pwm_value <= (1000*2) ) ){
-              alarm=0;
-              console("!!!!RESET!!!!");
-              console("the pwm time is"+String(pwm_value));
-          }
+      if ( ( pwm_value >= (1000 * 0.5) ) && ( pwm_value <= (1000 * 2) ) ) {
+        alarm = 0;
+        console("!!!!RESET!!!!");
+        console("the pwm time is" + String(pwm_value));
       }
-      delay(300);
-      attachInterrupt(0,changetouch,CHANGE); //pin2
-      attachInterrupt(1,changeangle,CHANGE); //pin3**/
+    }
+    delay(300);
+    attachInterrupt(0, changetouch, CHANGE); //pin2
+    attachInterrupt(1, changeangle, CHANGE); //pin3**/
   }
 }
 
-void rising() {  
+void rising() {
   prev_time = micros();
- attachInterrupt(0, falling, FALLING);
+  attachInterrupt(0, falling, FALLING);
 }
- 
+
 void falling() {
   attachInterrupt(0, rising, RISING);
-  pwm_value = micros()-prev_time;
+  pwm_value = micros() - prev_time;
   console("PWM_half_period: ");
   console(pwm_value);
   //detachInterrupt(0);
   //detachInterrupt(1);
 }
 
-void errorhandler(){
-  console("I'm in errorhandler");  
-  if(connerror==1){
+void errorhandler() {
+  console("I'm in errorhandler");
+  if (connerror == 1) {
     connectWiFi();
-    connerror=0;
-    SentOnCloud(String(analogRead(_vibratepin)),String(angle),String(alarm),String(isactive),String(0),String(error & isintr));
+    connerror = 0;
+    SentOnCloud(String(analogRead(_vibratepin)), String(angle), String(alarm), String(isactive), String(0), String(error & isintr));
   }
-  if(error==1){
-   SentOnCloud(String(analogRead(_vibratepin)),String(angle),String(alarm),String(isactive),String(0),String(1));
-   error=0;
+  if (error == 1) {
+    SentOnCloud(String(analogRead(_vibratepin)), String(angle), String(alarm), String(isactive), String(0), String(1));
+    error = 0;
   }
 }
 
-void console(String text){
-  if(serial==true)Serial.println(text);
-  if(is_sd==true){
-    /**myFile = SD.open("card.txt", FILE_WRITE);       // 開啟檔案，一次僅能開啟一個檔案 
-    if (myFile) {
+void console(String text) {
+  if (serial == true)Serial.println(text);
+  if (is_sd == true) {
+    /**myFile = SD.open("card.txt", FILE_WRITE);       // 開啟檔案，一次僅能開啟一個檔案
+      if (myFile) {
           Serial.print("(SD COPIED):");
-          Serial.println(text);               
+          Serial.println(text);
           myFile.print(text);  // 繼續寫在檔案後面
-          myFile.close();                               // 關閉檔案        
-    }**/  
-  }  
+          myFile.close();                               // 關閉檔案
+      }**/
+  }
 }
 
-void console(int text){
-  if(serial==true)Serial.println(text);
-  if(is_sd==true){
-    /**myFile = SD.open("card.txt", FILE_WRITE);       // 開啟檔案，一次僅能開啟一個檔案 
+void console(int text) {
+  if (serial == true)Serial.println(text);
+  /**if(is_sd==true){
+    /**myFile = SD.open("card.txt", FILE_WRITE);       // 開啟檔案，一次僅能開啟一個檔案
     if (myFile) {
           Serial.print("(SD COPIED):");
-          Serial.println(text);                
+          Serial.println(text);
           myFile.println(text);  // 繼續寫在檔案後面
-          myFile.close();                               // 關閉檔案        
-    }  **/
-  }  
+          myFile.close();                               // 關閉檔案
+    }
+    }
+  **/
 }
